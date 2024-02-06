@@ -1,0 +1,21 @@
+Some code
+
+    query = '''
+	    SELECT
+    	    content
+    '''
+
+text_file = open (f\"onix-{today}.xml\", \"w\", encoding=\"utf-8\")
+text_file.write(output)
+text_file.close()
+
+# connect and query
+cursor = connection.cursor()
+cursor.execute(query)
+records = cursor.fetchall()
+
+exec(test)
+
+A statement
+
+final line	

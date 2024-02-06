@@ -1,0 +1,32 @@
+Some code
+
+""" A comment """
+
+#!memo_include = (memo_mysql_conn.py, memo_io.py)
+# whatever
+
+Some script
+
+#!memo_include = (memo_mysql_conn.py, memo_test.py)
+
+
+'''Another comment 
+spanning multiple lines 
+'''
+
+query = $query:main  
+
+# A single line comment
+# Another single line comment
+
+A statement
+
+A statement followed by # a single line comment
+
+query = $query:test_query_2.sql   
+
+""" Another comment 
+with multiple
+lines"""
+
+final line	

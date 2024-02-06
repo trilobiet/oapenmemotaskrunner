@@ -1,0 +1,16 @@
+
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.url=jdbc:h2:mem:skel;MODE=MYSQL
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+#spring.datasource.user=
+#spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+hibernate.hbm2ddl.auto=create
+#spring.jpa.defer-datasource-initialization=true
+#endpoints.enabled=false
+# enable test-profile
+spring.profiles.active=test
+#spring.jpa.properties.hibernate.globally_quoted_identifiers=true
+
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
