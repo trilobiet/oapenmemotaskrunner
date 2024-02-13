@@ -2,28 +2,24 @@ Some code
 
 """ A comment """
 
-#!memo_include = (memo_mysql_conn.py, memo_io.py)
-# whatever
+from tinyhtml import html, h
+from datetime import datetime
 
-Some script
+from queries.comicsgrid import comic_books_rss
+from queries import countries
 
-#!memo_include = (memo_mysql_conn.py, memo_test.py)
+from sniplets import mysql_connect
+from sniplets import test123
+from sniplets import mysql_connect
 
+today: str = datetime.today().strftime('%Y%m%d')
+
+this = 'that'
+that = 'this'
 
 '''Another comment 
 spanning multiple lines 
 '''
-
-query = $query:main  
-
-# A single line comment
-# Another single line comment
-
-A statement
-
-A statement followed by # a single line comment
-
-query = $query:test_query_2.sql   
 
 """ Another comment 
 with multiple

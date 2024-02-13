@@ -71,5 +71,23 @@ public class Task implements Serializable {
 		
 		return username + "/" + fileName;
 	}
+	
+	public boolean isRunnableOnDate(LocalDate today) {
+		
+		// lastRunDate plays no role: we would never call this function before lastRunDate!
+		
+		if (startDate == null) return false;
+		else {
+			long unitsBetween = frequency.getChronoUnit().between(startDate, today);
+			LocalDate dt = startDate.plus(unitsBetween, frequency.getChronoUnit());
+			
+			//System.out.println("units " + unitsBetween);
+			//System.out.println(dt + " - " + today);
+			
+			return unitsBetween >= 0 && dt.equals(today);
+		}	
+	}
+	
+	
 }
 

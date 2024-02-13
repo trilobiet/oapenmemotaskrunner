@@ -15,11 +15,11 @@ public class DependenciesExtractor {
 	 */
 	private static final String INCLUDES_PATTERN = 
 		
-		"#!memo_include *= *\\(([^)]*)\\)";
+		"\\nfrom +sniplets +import +(.*)";
 
 	private static final String QUERIES_PATTERN = 
 			
-		"\\$query:([^\\s]*)";
+		"\\nfrom +queries\\.?([^\\s]*) +import +(.*)";
 	
 	
 	public static final Set<String> getScriptNames(String sourceCode) {
@@ -46,9 +46,12 @@ public class DependenciesExtractor {
 		
 		Set<String> res = new HashSet<>();
 		
-		while(m.find()) { // subsequent calls return next find! 
+		while(m.find()) { // subsequent calls return next find!
+			
+			String path = m.group(1).isBlank()? "" : m.group(1) + ":";
+			String query = m.group(2);
 
-			res.add(m.group(1));
+			res.add(path + query);
 		}
 	    
 		return res;

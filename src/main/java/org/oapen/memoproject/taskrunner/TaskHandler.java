@@ -1,5 +1,6 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.oapen.memoproject.taskrunner.entities.RunLog;
@@ -26,7 +27,7 @@ public class TaskHandler  {
 	
 	public List<Task> getRunnableTasks() {
 
-		return dbService.getRunnableTasks();
+		return dbService.getRunnableTasks(LocalDate.now());
 	}
 
 

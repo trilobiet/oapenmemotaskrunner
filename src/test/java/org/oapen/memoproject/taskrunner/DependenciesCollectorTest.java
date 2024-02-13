@@ -31,8 +31,8 @@ public class DependenciesCollectorTest {
 		mockedQuery = new Query();
 		mockedLibraryQuery = new Query();
 		
-		when(mockDbService.findScriptByName("lib_script_1.py")).thenReturn(Optional.of(mockedLibraryScript1)); 
-		when(mockDbService.findScriptByName("lib_script_2.py")).thenReturn(Optional.of(mockedLibraryScript2));
+		when(mockDbService.findScriptByName("lib_script_1")).thenReturn(Optional.of(mockedLibraryScript1)); 
+		when(mockDbService.findScriptByName("lib_script_2")).thenReturn(Optional.of(mockedLibraryScript2));
 		when(mockDbService.findQueryByName("lib_query_1")).thenReturn(Optional.of(mockedLibraryQuery));
 	}
 	
@@ -43,22 +43,23 @@ public class DependenciesCollectorTest {
 				+ "from rfeed import *\n"
 				+ "from datetime import datetime\n"
 				+ "\n"
+				+ "# Load required queries\n"
+				+ "from queries import lib_query_1\n"
+				+ "\n"
 				+ "# Load required library scripts\n"
-				+ "#!memo_include = (lib_script_1.py, lib_script_2.py)\n"
+				+ "from sniplets import lib_script_1\n"
+				+ "from sniplets import lib_script_2\n"
 				+ "\n"
 				+ "today: str = datetime.today().strftime('%Y%m%d')\n"
 				+ "\n"
 				+ "baseUrl = 'https://library.oapen.org/handle/'\n"
 				+ "\n"
 				+ "def run_a_query():\n"
-				+ "    query = $query:main\n"
-				+ "\n"
-				+ "    query2 = $query:lib_query_1\n"
 				+ "\n"
 				+ "    # connect and query\n"
 				+ "    connection = MemoMySQLConn.getConnection()\n"
 				+ "    cursor = connection.cursor()\n"
-				+ "    cursor.execute(query)\n"
+				+ "    cursor.execute(lib_query_1.query)\n"
 				+ "    records = cursor.fetchall()\n"
 				+ "    items = []\n"
 				+ "\n"
@@ -94,10 +95,10 @@ public class DependenciesCollectorTest {
 		ReflectionTestUtils.setField(mockedScript, "body", scriptBody);
 		ReflectionTestUtils.setField(mockedScript, "query", mockedQuery);
 		
-		ReflectionTestUtils.setField(mockedLibraryScript1, "name", "lib_script_1.py");
+		ReflectionTestUtils.setField(mockedLibraryScript1, "name", "lib_script_1");
 		ReflectionTestUtils.setField(mockedLibraryScript1, "body", libScript1);
 		
-		ReflectionTestUtils.setField(mockedLibraryScript2, "name", "lib_script_2.py");
+		ReflectionTestUtils.setField(mockedLibraryScript2, "name", "lib_script_2");
 		ReflectionTestUtils.setField(mockedLibraryScript2, "body", libScript2);				
 		
 		DependenciesCollector col = new DependenciesCollectorImp(mockDbService);

@@ -49,7 +49,7 @@ public class ScriptBundler {
 	public ScriptBundler addQuery(Query query) {
 		
 		queries.add(query);
-		evaluateQuery(query);
+		evaluateExpressions();
 		return this;
 	}
 
@@ -76,12 +76,12 @@ public class ScriptBundler {
 		return new LinkedList<>(queries);
 	}
 	
-	
-	// paste actual query bodies over query names
-	private void evaluateQuery(Query query) {
+	// TODO
+	private void evaluateExpressions() {
 		
-		evaluatedScript = evaluatedScript
-			.replace("$query:" + query.getName(), "'''\n" + query.getBody() + "\n'''" );
+		if (evaluatedScript != null) {
+			evaluatedScript = evaluatedScript.replace("TODO","TODO");
+		}	
 	}
 	
 

@@ -8,59 +8,27 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.Script;
-import org.springframework.test.util.ReflectionTestUtils;
 
 public class ScriptBundlerTest {
 	
 	@Test
-	public void whenAddQueries_queriesBodiesMustBeRenderedInScript() {
+	public void whenAddToBundle_thenBundleContainsWhatIsAdded() {
 
 		Script mockedScript = new Script();
-		Query mockedQuery1 = new Query();
-		Query mockedQuery2 = new Query();
-		Query mockedQuery3 = new Query();
-		
-		ReflectionTestUtils.setField(mockedScript, "body", ""
-			+ "script header\n"
-			+ "\n"
-			+ "script statements\n"
-			+ "\n"
-			+ "q1 = $query:query1\n"
-			+ "\n"
-			+ "script statements\n"
-			+ "\n"
-			+ "anotherQuery = $query:query2 blahblah\n"
-			+ "\n"
-			+ "script statements\n"
-			+ "\n"
-			+ "script statements\n"
-			+ "\n"
-			+ "blahblah q3=$query:query3\n"
-			+ "\n"
-			+ "script footer"
-		);
-		
-		// Use ReflectionUtils in testing when no public setters are available
-		ReflectionTestUtils.setField(mockedQuery1,"name","query1");
-		ReflectionTestUtils.setField(mockedQuery1,"body","SELECT 1 FROM TEST1");
-		
-		ReflectionTestUtils.setField(mockedQuery2,"name","query2");
-		ReflectionTestUtils.setField(mockedQuery2,"body","SELECT 2 FROM TEST2");
-		
-		ReflectionTestUtils.setField(mockedQuery3,"name","query3");
-		ReflectionTestUtils.setField(mockedQuery3,"body","SELECT 3 FROM TEST3");
+		Script mockedSniplet = new Script();
+		Query mockedQuery = new Query();
 
+		Set<Script> sniplets = new HashSet<>();
+		sniplets.add(mockedSniplet);
+		
 		Set<Query> queries = new HashSet<>();
-		queries.add(mockedQuery1);
-		queries.add(mockedQuery2);
+		queries.add(mockedQuery);
 
-		ScriptBundler sb = new ScriptBundler(mockedScript).addQueries(queries).addQuery(mockedQuery3);
+		ScriptBundler sb = new ScriptBundler(mockedScript).addQueries(queries).includeScripts(sniplets);
 		
-		String b = sb.getEvaluatedScriptBody();
-		
-		assertTrue(b.contains("SELECT 1 FROM TEST1"));
-		assertTrue(b.contains("SELECT 2 FROM TEST2"));
-		assertTrue(b.contains("SELECT 3 FROM TEST3"));
+		assertTrue(sb.getScript().equals(mockedScript));
+		assertTrue(sb.getIncludedScripts().contains(mockedSniplet));
+		assertTrue(sb.getQueries().containsAll(queries));
 	}
 
 }

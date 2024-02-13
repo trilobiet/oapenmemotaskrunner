@@ -1,5 +1,6 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,7 +12,7 @@ import org.oapen.memoproject.taskrunner.entities.Task;
 
 public interface DBService {
 
-	List<Task> getRunnableTasks();
+	List<Task> getRunnableTasks(LocalDate date);
 	Optional<Task> findTaskById(UUID id);
 	Optional<Task> findTaskByName(String name);
 	Optional<Query> findQueryByName(String name);

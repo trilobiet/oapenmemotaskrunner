@@ -25,10 +25,13 @@ public class DependenciesExtractorTest {
 	@Test
 	public void whenScriptContainsIncludedFiles_thenFind() throws IOException {
 		
-		Set<String> includes = DependenciesExtractor.getScriptNames(in);
+		Set<String> sniplets = DependenciesExtractor.getScriptNames(in);
 		
-		assertEquals(3, includes.size());
-		assertThat(includes.contains("memo_test.py")).isTrue();
+		//System.out.println(sniplets);
+		
+		assertEquals(2, sniplets.size());
+		assertThat(sniplets.contains("mysql_connect")).isTrue();
+		assertThat(sniplets.contains("test123")).isTrue();
 	}
 
 	@Test
@@ -36,11 +39,11 @@ public class DependenciesExtractorTest {
 		
 		Set<String> queries = DependenciesExtractor.getQueryNames(in);
 		
-		assertEquals(2, queries.size());
-		assertThat(queries.contains("main")).isTrue();
-		assertThat(queries.contains("test_query_2.sql")).isTrue();
+		//System.out.println(queries);
 		
-		// System.out.println(queries);
+		assertEquals(2, queries.size());
+		assertThat(queries.contains("countries")).isTrue();
+		assertThat(queries.contains("comicsgrid:comic_books_rss")).isTrue();
 	}
 
 

@@ -16,39 +16,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DBServiceImp implements DBService {
 
 	@Autowired
-	TaskRepository taskRepository;
+	private TaskRepository taskRepository;
 	
 	@Autowired
-	QueryRepository queryRepository;
+	private QueryRepository queryRepository;
 
 	@Autowired
-	ScriptRepository scriptRepository;
+	private ScriptRepository scriptRepository;
 
 	@Autowired
-	RunLogRepository runLogRepository;
+	private RunLogRepository runLogRepository;
 	
 	@Override
-	public List<Task> getRunnableTasks() {
+	public List<Task> getRunnableTasks(LocalDate date) {
 		
-		List<Task> tasks = taskRepository.findAll();
+		List<Task> tasks = taskRepository.findAll().stream()
+			.filter(task -> task.isRunnableOnDate(date))
+			.collect(Collectors.toList());
 		
-		LocalDate today = LocalDate.now();
-		LocalDate tomorrow = LocalDate.now().plusDays(1);
-		
-		List<Task> tasksToRun = tasks.stream()
-			.filter(task -> task.getStartDate() != null)
-			// startDate is today or earlier
-			.filter(task -> task.getStartDate().isBefore(tomorrow))
-			.filter(task ->
-				// task hasn't run yet
-				task.getLastRunDate() == null ||
-				// task frequency has completed a cycle today, given start date
-				task.getFrequency().firstAfter(task.getStartDate(), task.getLastRunDate()).isEqual(today)
-			)
-			.collect(Collectors.toList())
-			;
-		
-		return tasksToRun;
+		return tasks;
 	}
 	
 	@Override
