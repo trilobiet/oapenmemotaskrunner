@@ -12,7 +12,7 @@ public class ExecTest {
 	public static void main(String[] args) throws IOException {
 		
 		String scriptsDir = "/home/acdhirr/Desktop/OAPEN2020/MEMO-project/sample-scripts/docker/hiero";
-		String script = "comic_books_rss.py";
+		String script = "comicsgrid:comic_books_rss.py";
 		
 		// TODO maybe check whether the script is created 
 		
@@ -33,9 +33,9 @@ public class ExecTest {
 	    executor.setStreamHandler(streamHandler);
 	    executor.setExitValues(null); // allow all exit values, pass Python errors to Java
 	    
-	    int q = executor.execute(cmdLine);
+	    int exitValue = executor.execute(cmdLine);
 	    System.out.println(outputStream.toString().trim());
-	    System.out.println(q);
+	    System.out.println(exitValue);
 		
 	}
 

@@ -1,5 +1,6 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -10,15 +11,24 @@ import org.oapen.memoproject.taskrunner.entities.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import jep.Interpreter;
-import jep.JepException;
-import jep.SharedInterpreter;
-
 @Component
-public class TaskRunner implements ScriptRunner {
+public class TaskManager  {
+	
+	@Autowired
+	DBService dbService;
+	
+	@Autowired
+	ScriptRunner scriptRunner;
 	
 	@Autowired
 	DependenciesCollector dpdCollector;
+	
+	public void runTasks() {
+		
+		List<Task> tasks = dbService.getRunnableTasks(LocalDate.now());
+		tasks.forEach(task -> writeRunLog(runTask(task)));
+	}
+	
 	
 	public RunLog runTask(Task task) {
 		
@@ -34,7 +44,7 @@ public class TaskRunner implements ScriptRunner {
 		}
 		else try {
 			
-			run(sb);
+			scriptRunner.run(sb);
 			rl.succeed("OK");
 		}
 		catch (Exception e) {
@@ -54,27 +64,9 @@ public class TaskRunner implements ScriptRunner {
 	}
 
 
-	@Override
-	public String run(ScriptBundler sb) throws Exception {
-		
-		try (Interpreter interp = new SharedInterpreter()) {
-			
-			// 1: evaluate code
-			sb.getExpressions().stream().forEachOrdered(exp -> interp.eval(exp));
-			sb.getIncludedScripts().stream().forEachOrdered(script -> interp.exec(script.getBody()));
-			interp.exec(sb.getEvaluatedScriptBody());
-			
-			// 2: get result and write result to file path for this Task
-			Object result1 = interp.getValue("result"); // read a value from Python thread
-			
-			// 3: return RunLog success
-			return result1.toString();
-		}	
-		catch (JepException e) {
+	public void writeRunLog(RunLog rl) {
 
-			throw (e);
-		} 
+		dbService.log(rl);
 	}
-	
-}
 
+}

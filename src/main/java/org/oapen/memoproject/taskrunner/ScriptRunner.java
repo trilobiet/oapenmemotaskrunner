@@ -1,7 +1,9 @@
 package org.oapen.memoproject.taskrunner;
 
+import io.vavr.control.Either;
+
 public interface ScriptRunner {
 	
-	String run(ScriptBundler scriptBundle) throws Exception;
+	Either<String,String> run(ScriptBundler scriptBundle);
 
 }

@@ -76,13 +76,20 @@
 			<scope>test</scope>
 		</dependency>		
 		
+		<!-- https://mvnrepository.com/artifact/io.vavr/vavr -->
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+			<version>0.10.4</version>
+		</dependency>
 		
 		<!-- Run (system installed) Python from Java -->
+		<!--
 		<dependency>
 			<groupId>black.ninia</groupId>
 			<artifactId>jep</artifactId>
 			<version>4.2.0</version>
-		</dependency>
+		</dependency> -->
 		
 
 	</dependencies>
