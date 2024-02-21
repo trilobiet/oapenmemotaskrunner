@@ -1,59 +1,67 @@
 package org.oapen.memoproject.taskrunner;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import org.oapen.memoproject.taskrunner.entities.Query;
-import org.oapen.memoproject.taskrunner.entities.RunLog;
 import org.oapen.memoproject.taskrunner.entities.Script;
 import org.oapen.memoproject.taskrunner.entities.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import io.vavr.control.Either;
 
 @Component
 public class TaskManager  {
 	
 	@Autowired
-	DBService dbService;
+	private TaskProvider taskProvider;
 	
 	@Autowired
-	ScriptRunner scriptRunner;
+	private TaskLogger taskLogger;
 	
 	@Autowired
-	DependenciesCollector dpdCollector;
+	private Environment env;	
+	
+	@Autowired
+	private DependenciesCollector dpdCollector;
 	
 	public void runTasks() {
 		
-		List<Task> tasks = dbService.getRunnableTasks(LocalDate.now());
-		tasks.forEach(task -> writeRunLog(runTask(task)));
+		List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
+		tasks.forEach(task -> taskLogger.log(runTask(task)));
 	}
 	
 	
-	public RunLog runTask(Task task) {
+	public TaskLog runTask(Task task) {
 		
 		ScriptBundler sb = toBundle(task.getScript());
-		RunLog rl = new RunLog(task.getId());
+		TaskLog taskLog = TaskLog.builder().idTask(task.getId()).build();
 		
 		Map<String, List<String>> illegalInstructions = CodeGuard.illegalInstructions(sb);
 		
-		if (!illegalInstructions.isEmpty()) {
+		if (!illegalInstructions.isEmpty())  
+		
+			taskLog.fail("Illegal instructions found: " + illegalInstructions.toString());
+
+		else {
 			
-			// task fails due to illegal code instructions
-			rl.fail("Illegal instructions found: " + illegalInstructions.toString());
-		}
-		else try {
+			Either<String, String> runResult 
+				= new DockerPythonRunner(env.getProperty("docker.image.python"), env.getProperty("path.temp.pythonscripts")).run(sb);
 			
-			scriptRunner.run(sb);
-			rl.succeed("OK");
-		}
-		catch (Exception e) {
-			
-			rl.fail(e.getMessage());
+			if (runResult.isRight()) 
+				taskLog.succeed("OK");
+			else 
+				taskLog.fail(runResult.getLeft()); 
 		}
 		
-		return rl;
+		taskLog.setDateTime(LocalDateTime.now());
+		return taskLog;
 	}
+	
 		
 	private ScriptBundler toBundle(Script script) {
 		
@@ -64,9 +72,12 @@ public class TaskManager  {
 	}
 
 
-	public void writeRunLog(RunLog rl) {
-
-		dbService.log(rl);
+	@Override
+	public String toString() {
+		return "TaskManager [taskProvider=" + taskProvider + ", taskLogger=" + taskLogger + "]";
 	}
+	
+	
+
 
 }

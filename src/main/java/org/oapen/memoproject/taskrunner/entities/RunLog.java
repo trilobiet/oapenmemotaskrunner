@@ -49,16 +49,4 @@ public class RunLog implements Serializable {
 		this.date = LocalDateTime.now();
 	}
 	
-	public void succeed(String message) {
-		
-		this.isSuccess = true;
-		this.message = message;
-	}
-	
-	public void fail(String message) {
-		
-		this.isSuccess = false;
-		this.message = message;
-	}
-	
 }
