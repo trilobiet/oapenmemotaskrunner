@@ -1,10 +1,8 @@
 package org.oapen.memoproject.taskrunner.jpa;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.oapen.memoproject.taskrunner.DBService;
 import org.oapen.memoproject.taskrunner.entities.Query;
@@ -28,19 +26,8 @@ public class DBServiceImp implements DBService {
 	private RunLogRepository runLogRepository;
 	
 	@Override
-	public List<Task> getRunnableTasks(LocalDate date) {
-		
-		List<Task> tasks = taskRepository.findAll().stream()
-			.filter(task -> task.isRunnableOnDate(date))
-			.collect(Collectors.toList());
-		
-		return tasks;
-	}
-	
-	@Override
-	public void log(RunLog rl) {
-
-		runLogRepository.save(rl);
+	public List<Task> getTasks() {
+		return taskRepository.findAll();
 	}
 
 	@Override
@@ -64,6 +51,11 @@ public class DBServiceImp implements DBService {
 	public Optional<Script> findScriptByName(String name) {
 		
 		return scriptRepository.findByName(name);
+	}
+
+	@Override
+	public void log(RunLog rl) {
+		runLogRepository.save(rl);
 	}
 	
 }

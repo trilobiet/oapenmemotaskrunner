@@ -23,6 +23,8 @@ public final class DockerPythonRunner implements ScriptRunner {
 	private final String PYTHON_SCRIPTS_PATH; // = System.getProperty("user.home") + "/tmp_python/";
 	private final String DOCKER_IMAGE; // = "oapen/ubuntu2204python310";
 	
+	private boolean purgeTempFiles = true;
+	
 	private static final Logger logger = 
 			LoggerFactory.getLogger(DockerPythonRunner.class); 
 	
@@ -30,6 +32,14 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		DOCKER_IMAGE = dockerImage;
 		PYTHON_SCRIPTS_PATH = pythonScriptsPath;
+	}
+	
+	public boolean isPurgeTempFiles() {
+		return purgeTempFiles;
+	}
+
+	public void setPurgeTempFiles(boolean purgeTempFiles) {
+		this.purgeTempFiles = purgeTempFiles;
 	}
 
 	@Override
@@ -74,7 +84,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		} finally {
 
-			if (path.isPresent()) cleanUp(path.get());
+			if (path.isPresent() && purgeTempFiles) cleanUp(path.get());
 		}
 
 		return result;
@@ -95,7 +105,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 		Script main = scriptBundle.getScript();
 
 		// main script
-		saveSourceFile(rootDir.concat("/").concat(main.getName()), main.getBody());
+		saveSourceFile(rootDir.concat("/").concat("main.py"), main.getBody());
 
 		// included scripts
 		for (Script script : scriptBundle.getIncludedScripts()) {
@@ -106,12 +116,19 @@ public final class DockerPythonRunner implements ScriptRunner {
 		for (Query query : scriptBundle.getQueries()) {
 
 			String body = wrapAsVariable("query", query.getBody());
-			saveSourceFile(rootDir.concat("/queries/").concat(query.getName()), body);
+			saveSourceFile(rootDir.concat("/queries/").concat(parseQueryName(query.getName())), body);
 		}
 
 		return rootDir;
+		 
 	}
-
+	
+	private String parseQueryName(String qname) {
+		
+		return (qname.substring(qname.indexOf(":")+1)).toLowerCase();
+		
+	}
+	
 	private void saveSourceFile(String name, String content) throws IOException {
 
 		if (!name.endsWith(".py"))
@@ -143,5 +160,6 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		return rootDir.getAbsolutePath();
 	}
+
 
 }

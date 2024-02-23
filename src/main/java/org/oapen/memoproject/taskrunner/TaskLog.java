@@ -6,20 +6,24 @@ import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter @Setter
 @Builder
+@ToString
 public class TaskLog {
 	
 	private UUID idTask;
 	private boolean isSuccess;
 	private String message;
 	private LocalDateTime dateTime;
+	private String output;
 	
-	public void succeed(String message) {
+	public void succeed(String message, String output) {
 		
 		this.isSuccess = true;
 		this.message = message;
+		this.output = output;
 	}
 	
 	public void fail(String message) {

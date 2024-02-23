@@ -1,6 +1,5 @@
 package org.oapen.memoproject.taskrunner;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +28,17 @@ public class TaskManager  {
 	@Autowired
 	private DependenciesCollector dpdCollector;
 	
+	
 	public void runTasks() {
 		
-		List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
-		tasks.forEach(task -> taskLogger.log(runTask(task)));
+		System.out.println("running at " + LocalDateTime.now());
+		
+		// TODO for each task save the resulting document to the clients directory
+		
+		
+		//List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
+		//tasks.forEach(task -> taskLogger.log(runTask(task)));
 	}
-	
 	
 	public TaskLog runTask(Task task) {
 		
@@ -49,11 +53,15 @@ public class TaskManager  {
 
 		else {
 			
-			Either<String, String> runResult 
-				= new DockerPythonRunner(env.getProperty("docker.image.python"), env.getProperty("path.temp.pythonscripts")).run(sb);
+			DockerPythonRunner runner = 
+				new DockerPythonRunner(env.getProperty("docker.image.python"), env.getProperty("path.temp.pythonscripts"));
+			
+			runner.setPurgeTempFiles(env.getProperty("path.temp.pythonscripts.purge",Boolean.class));
+			
+			Either<String, String> runResult = runner.run(sb);
 			
 			if (runResult.isRight()) 
-				taskLog.succeed("OK");
+				taskLog.succeed("OK", runResult.get());
 			else 
 				taskLog.fail(runResult.getLeft()); 
 		}
@@ -76,8 +84,7 @@ public class TaskManager  {
 	public String toString() {
 		return "TaskManager [taskProvider=" + taskProvider + ", taskLogger=" + taskLogger + "]";
 	}
-	
-	
 
+	
 
 }

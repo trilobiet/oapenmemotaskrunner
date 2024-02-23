@@ -1,7 +1,10 @@
 
-spring.datasource.url=jdbc:mysql://12.34.56.123:3306/oapen_memo?reconnect=true&rewriteBatchedStatements=true
-spring.datasource.username=trilobiet
-spring.datasource.password=******
+spring.profiles.active=@activatedProperties@
 
-logging.level.root=INFO
-logging.level.oapen.memoproject.taskrunner=INFO
+logging.file.name=${user.home}/oapen/oapenmemo/logs/oapen_memo-taskrunner.log
+
+docker.image.python=oapen/ubuntu2204python310
+path.temp.pythonscripts=${user.home}/oapen/oapenmemo/tmp_python/
+
+# set to false for testing
+path.temp.pythonscripts.purge=false
