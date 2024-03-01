@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.oapen.memoproject.taskrunner.entities.Script;
@@ -28,7 +29,8 @@ public final class CodeGuard {
 		// String noCommentsCode = removeComments(code);
 		List<String> found = new ArrayList<>();
 		illegalInstructions.stream().forEach( word -> {
-			if (Pattern.compile(word.regex).matcher(code).find()) found.add(word.word);
+			if (Pattern.compile(word.regex).matcher(Objects.toString(code, "")).find()) 
+				found.add(word.word);
 		});
 		
 		return found;

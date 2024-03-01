@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.exec.CommandLine;
@@ -59,7 +60,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 				  "docker run --rm " + "-v " + path.get() + ":/root/scripts "
 				+ DOCKER_IMAGE + " python3 -B /root/scripts/main.py";
 
-			System.out.println(cmd);
+			// System.out.println(cmd);
 			
 			CommandLine cmdLine = CommandLine.parse(cmd);
 
@@ -78,7 +79,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 			else
 				result = Either.left("exit value "+ exitValue + ": " + output);
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 
 			result = Either.left(e.getMessage());
 
@@ -103,6 +104,10 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		String rootDir = createDirectoryTree();
 		Script main = scriptBundle.getScript();
+		
+		// send out a warning when the script is empty
+		if (main.getBody() == null) 
+			throw new RuntimeException("Don't know what to run - main script contains no code...");
 
 		// main script
 		saveSourceFile(rootDir.concat("/").concat("main.py"), main.getBody());
@@ -130,18 +135,24 @@ public final class DockerPythonRunner implements ScriptRunner {
 	}
 	
 	private void saveSourceFile(String name, String content) throws IOException {
+		
+		if (name != null) {
 
-		if (!name.endsWith(".py"))
-			name = name.concat(".py");
-
-		File scriptFile = new File(name);
-		byte[] bytes = content.getBytes();
-		Files.write(scriptFile.toPath(), bytes);
+			if (!name.endsWith(".py")) name = name.concat(".py");
+	
+			File scriptFile = new File(name);
+			byte[] bytes = Objects.toString(content,"").getBytes();
+			Files.write(scriptFile.toPath(), bytes);
+		}	
 	}
 
 	private String wrapAsVariable(String variable, String content) {
-
-		return variable.concat(" = '''\n").concat(content).concat("\n'''");
+		
+		if (variable != null && content != null) 
+			return variable.concat(" = '''\n").concat(content).concat("\n'''");
+		else 
+			return ""; 
+			
 	}
 
 	private String createDirectoryTree() throws IOException {

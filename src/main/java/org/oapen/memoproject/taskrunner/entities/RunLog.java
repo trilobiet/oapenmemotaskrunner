@@ -9,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +35,8 @@ public class RunLog implements Serializable {
 	
 	private String message;
 	private boolean isSuccess;
-	private LocalDateTime date; 
+	private LocalDateTime date;
+	@Type(type="uuid-char")
 	private UUID idTask;
 	
 	public RunLog (UUID idTask) {

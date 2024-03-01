@@ -15,7 +15,7 @@ public class TaskLoggerImp implements TaskLogger {
 	private DBService dbService; 
 
 	@Override
-	public void log(TaskLog tl) {
+	public void log(TaskResult tl) {
 		
 		RunLog rl = new RunLog(tl.getIdTask());
 		rl.setSuccess(tl.isSuccess());

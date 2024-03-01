@@ -4,14 +4,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.transaction.Transactional;
+
 import org.oapen.memoproject.taskrunner.DBService;
+import org.oapen.memoproject.taskrunner.ExportStore;
+import org.oapen.memoproject.taskrunner.entities.Export;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.RunLog;
 import org.oapen.memoproject.taskrunner.entities.Script;
 import org.oapen.memoproject.taskrunner.entities.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class DBServiceImp implements DBService {
+public class DBServiceImp implements DBService, ExportStore {
 
 	@Autowired
 	private TaskRepository taskRepository;
@@ -24,6 +28,10 @@ public class DBServiceImp implements DBService {
 
 	@Autowired
 	private RunLogRepository runLogRepository;
+	
+	@Autowired
+	private ExportRepository exportRepository;
+	
 	
 	@Override
 	public List<Task> getTasks() {
@@ -56,6 +64,20 @@ public class DBServiceImp implements DBService {
 	@Override
 	public void log(RunLog rl) {
 		runLogRepository.save(rl);
+	}
+
+	@Override
+	@Transactional
+	public boolean save(Export export) {
+		
+		// Delete previous version! 
+		// We don't want to keep all history exports
+		exportRepository.deleteByTask(export.getTask());
+		Export newExport = exportRepository.save(export);
+		
+		// Some sort of check to see if things went well
+		if (newExport.getId() != null) return true;
+		else return false;
 	}
 	
 }
