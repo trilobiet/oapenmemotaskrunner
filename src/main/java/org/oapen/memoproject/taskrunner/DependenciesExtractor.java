@@ -2,6 +2,7 @@ package org.oapen.memoproject.taskrunner;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ public class DependenciesExtractor {
 	public static final Set<String> getScriptNames(String sourceCode) {
 		
 		Pattern pattern = Pattern.compile(INCLUDES_PATTERN);
-		Matcher m = pattern.matcher(sourceCode);
+		Matcher m = pattern.matcher(Objects.toString(sourceCode,""));
 		
 		Set<String> res = new HashSet<>();
 		
@@ -41,10 +42,10 @@ public class DependenciesExtractor {
 	
 	public static final Set<String> getQueryNames(String sourceCode) {
 		
-		Pattern pattern = Pattern.compile(QUERIES_PATTERN);
-		Matcher m = pattern.matcher(sourceCode);
-		
 		Set<String> res = new HashSet<>();
+		
+		Pattern pattern = Pattern.compile(QUERIES_PATTERN);
+		Matcher m = pattern.matcher(Objects.toString(sourceCode,""));
 		
 		while(m.find()) { // subsequent calls return next find!
 			

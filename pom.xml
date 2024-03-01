@@ -83,6 +83,12 @@
 			<version>0.10.4</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>1.18</version>
+		</dependency>		
+		
 		<!-- Run (system installed) Python from Java -->
 		<!--
 		<dependency>

@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.oapen.memoproject.taskrunner.DBService;
-import org.oapen.memoproject.taskrunner.TaskLog;
+import org.oapen.memoproject.taskrunner.TaskResult;
 import org.oapen.memoproject.taskrunner.TaskManager;
 import org.oapen.memoproject.taskrunner.entities.Task;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +28,25 @@ public class RunController {
     @ResponseBody
     public ResponseEntity<?> runTask( @PathVariable UUID id ) {
     	
-    	Optional<Task> task = dbService.findTaskById(id);
+    	Optional<Task> oTask = dbService.findTaskById(id);
     	
-    	ResponseEntity<TaskLog> resp = task.map( t -> {
-			TaskLog tl = taskManager.runTask(t);
-			// maybe log to DB?
-			return new ResponseEntity<>(tl,HttpStatus.OK);
+    	ResponseEntity<TaskResult> resp = oTask.map( task -> {
+			
+    		TaskResult taskResult = taskManager.runTask(task);
+    		
+    		System.out.println(taskResult);
+    		
+			taskManager.logTaskResult(taskResult);
+
+			if (taskResult.isSuccess()) {
+				
+				taskManager.saveExport(task, taskResult);
+				return new ResponseEntity<>(taskResult, HttpStatus.OK);
+			}
+			else {
+				
+				return new ResponseEntity<>(taskResult, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
     	})
     	.orElse(
     		// return a 404	

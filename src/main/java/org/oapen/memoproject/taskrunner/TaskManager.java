@@ -1,9 +1,11 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.oapen.memoproject.taskrunner.entities.Export;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.Script;
 import org.oapen.memoproject.taskrunner.entities.Task;
@@ -26,24 +28,53 @@ public class TaskManager  {
 	private Environment env;	
 	
 	@Autowired
+	private ExportStore exportStore;	
+	
+	@Autowired
 	private DependenciesCollector dpdCollector;
+	
+	@Autowired
+	private MimeTypeService mimeTypeService;
 	
 	
 	public void runTasks() {
 		
 		System.out.println("running at " + LocalDateTime.now());
 		
-		// TODO for each task save the resulting document to the clients directory
+		List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
 		
+		for (Task task: tasks) {
+			
+			TaskResult taskResult = runTask(task);
 		
-		//List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
-		//tasks.forEach(task -> taskLogger.log(runTask(task)));
+			// For each successful task save the resulting document to the export store
+			if (taskResult.isSuccess()) saveExport(task, taskResult);
+			
+			// Finally log
+			logTaskResult(taskResult);
+		}
 	}
 	
-	public TaskLog runTask(Task task) {
+
+	public boolean saveExport(Task task, TaskResult tr) {
+		
+		Export exp = new Export(task, tr.getOutput());
+
+		exp.setMimetype(mimeTypeService.getMimeTypeFromFileName(task.getFileName()));
+		boolean isSaved = exportStore.save(exp);
+		return isSaved;
+	}
+	
+	
+	public void logTaskResult(TaskResult tr) {
+		
+		taskLogger.log(tr);
+	}
+	
+	public TaskResult runTask(Task task) {
 		
 		ScriptBundler sb = toBundle(task.getScript());
-		TaskLog taskLog = TaskLog.builder().idTask(task.getId()).build();
+		TaskResult taskLog = TaskResult.builder().idTask(task.getId()).build();
 		
 		Map<String, List<String>> illegalInstructions = CodeGuard.illegalInstructions(sb);
 		
@@ -84,7 +115,5 @@ public class TaskManager  {
 	public String toString() {
 		return "TaskManager [taskProvider=" + taskProvider + ", taskLogger=" + taskLogger + "]";
 	}
-
-	
 
 }

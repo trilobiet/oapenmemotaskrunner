@@ -11,12 +11,13 @@ import lombok.ToString;
 @Getter @Setter
 @Builder
 @ToString
-public class TaskLog {
+public class TaskResult {
 	
 	private UUID idTask;
 	private boolean isSuccess;
 	private String message;
 	private LocalDateTime dateTime;
+	@ToString.Exclude
 	private String output;
 	
 	public void succeed(String message, String output) {
