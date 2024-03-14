@@ -33,7 +33,7 @@ import lombok.ToString;
 @Immutable
 @Subselect(
     "SELECT "
-  + "  t.id, t.id_script, h.username, t.file_name, t.extension, t.start_date, t.frequency, l.date, l.is_success "
+  + "  t.id, t.id_script, h.username, t.file_name, t.extension, t.is_active, t.start_date, t.frequency, l.date, l.is_success "
   + "FROM "
   + "  task t "
   + "    JOIN homedir h ON t.id_homedir = h.id"
@@ -42,9 +42,9 @@ import lombok.ToString;
   + "      FROM runlog"
   + "      WHERE t.id = runlog.id_task"
   + "    ) "
-  + "WHERE "
-  + "  t.is_active = true "
-  + "  AND t.start_date < now() "
+  //+ "WHERE "
+  //+ "  t.is_active = true "
+  //+ "  AND t.start_date < now() "
 )
 public class Task implements Serializable {
 	
@@ -62,6 +62,7 @@ public class Task implements Serializable {
 	@Column(name="date")
 	private LocalDate lastRunDate;
 	private Boolean isSuccess;
+	private boolean isActive;
 	
 	@OneToOne
 	@JoinColumn(name = "id_script")

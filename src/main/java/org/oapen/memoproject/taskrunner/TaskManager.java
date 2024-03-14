@@ -39,7 +39,7 @@ public class TaskManager  {
 	
 	public void runTasks() {
 		
-		System.out.println("running at " + LocalDateTime.now());
+		//System.out.println("running at " + LocalDateTime.now());
 		
 		List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
 		
