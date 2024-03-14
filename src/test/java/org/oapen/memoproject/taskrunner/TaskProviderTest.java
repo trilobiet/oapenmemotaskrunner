@@ -25,18 +25,22 @@ public class TaskProviderTest {
 		t1 = new Task();
 		ReflectionTestUtils.setField(t1, "startDate", LocalDate.of(2024, 1, 3));
 		ReflectionTestUtils.setField(t1, "frequency", TaskFrequency.D);
+		ReflectionTestUtils.setField(t1, "isActive", true);
 		
 		t2 = new Task();
 		ReflectionTestUtils.setField(t2, "startDate", LocalDate.of(2024, 1, 10));
 		ReflectionTestUtils.setField(t2, "frequency", TaskFrequency.W);
+		ReflectionTestUtils.setField(t2, "isActive", true);
 
 		t3 = new Task();
 		ReflectionTestUtils.setField(t3, "startDate", LocalDate.of(2024, 2, 7));
 		ReflectionTestUtils.setField(t3, "frequency", TaskFrequency.M);
+		ReflectionTestUtils.setField(t3, "isActive", true);
 
 		t4 = new Task();
 		ReflectionTestUtils.setField(t4, "startDate", LocalDate.of(2025, 2, 5));
 		ReflectionTestUtils.setField(t4, "frequency", TaskFrequency.Y);
+		ReflectionTestUtils.setField(t4, "isActive", true);
 
 		mockDBService = mock(DBService.class);
 		taskProvider = new TaskProviderImp();
