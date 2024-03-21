@@ -17,6 +17,8 @@ public class TaskProviderImp implements TaskProvider {
 	@Override
 	public List<Task> getRunnableTasks(LocalDate date) {
 		
+		//System.out.println(dbService.getTasks());
+		
 		List<Task> tasks = dbService.getTasks().stream()
 			.filter(task -> task.isActive())
 			.filter(task -> !task.getStartDate().isAfter(date))
