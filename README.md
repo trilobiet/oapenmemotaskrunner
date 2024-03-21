@@ -24,7 +24,7 @@
     
 Save as dockerfile (or whatever name seems apt) 
 
-###2. Create an image from the Docker file
+### 2. Create an image from the Docker file
 
 Now run the Docker file to create a local image:
 
@@ -35,7 +35,7 @@ Call docker image ls to see the new image:
     REPOSITORY                  TAG       IMAGE ID       CREATED          SIZE 
     oapen/ubuntu2204python310   latest    8ff08ccecd71   2 minutes ago   570MB
 
-###3. Run Python script in a Docker container
+### 3. Run Python script in a Docker container
 
 Now go to the pythonscripts parent directory and run any Python script:
 
@@ -57,7 +57,7 @@ Scripts must end with a print statement, feeding output to the shell, which can 
 Running the docker run ... command can then be delegated to Apache Commons Exec to have all this initiated from within a Java application.
 
  
-###4. Coping with changes
+### 4. Coping with changes
 
 When new modules must be installed:
 
@@ -66,7 +66,7 @@ When new modules must be installed:
 - rebuild new image from updated dockerfile
 
 
-###5. Copying existing image
+### 5. Copying existing image
 
 Save the existing image to an archive:
 
