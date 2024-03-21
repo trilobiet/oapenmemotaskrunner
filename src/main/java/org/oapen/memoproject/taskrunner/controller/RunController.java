@@ -82,8 +82,6 @@ public class RunController {
     	
     	Optional<Task> oTask = dbService.findTaskById(id);
     	
-    	System.out.println(oTask);
-    	
     	Map<String,String> msg404 = new HashMap<>();
     	msg404.put("message","Resource not found");
     	

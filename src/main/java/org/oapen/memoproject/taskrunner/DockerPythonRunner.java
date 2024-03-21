@@ -29,19 +29,23 @@ public final class DockerPythonRunner implements ScriptRunner {
 	private static final Logger logger = 
 			LoggerFactory.getLogger(DockerPythonRunner.class); 
 	
+	
 	public DockerPythonRunner(String dockerImage, String pythonScriptsPath) {
 
 		DOCKER_IMAGE = dockerImage;
 		PYTHON_SCRIPTS_PATH = pythonScriptsPath;
 	}
 	
+	
 	public boolean isPurgeTempFiles() {
 		return purgeTempFiles;
 	}
 
+	
 	public void setPurgeTempFiles(boolean purgeTempFiles) {
 		this.purgeTempFiles = purgeTempFiles;
 	}
+	
 
 	@Override
 	public Either<String, String> run(ScriptBundler scriptBundle) {
@@ -90,6 +94,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		return result;
 	}
+	
 
 	private void cleanUp(String path) {
 
@@ -100,9 +105,10 @@ public final class DockerPythonRunner implements ScriptRunner {
 		}
 	}
 
+	
 	public String saveBundleAsFiles(ScriptBundler scriptBundle) throws IOException {
 
-		String rootDir = createDirectoryTree();
+		String rootDir = createRunRoot();
 		Script main = scriptBundle.getScript();
 		
 		// send out a warning when the script is empty
@@ -121,18 +127,19 @@ public final class DockerPythonRunner implements ScriptRunner {
 		for (Query query : scriptBundle.getQueries()) {
 
 			String body = wrapAsVariable("query", query.getBody());
-			saveSourceFile(rootDir.concat("/queries/").concat(parseQueryName(query.getName())), body);
+			saveSourceFile(rootDir.concat("/queries/").concat(queryNameToPath(query.getName())), body);
 		}
 
 		return rootDir;
 		 
 	}
 	
-	private String parseQueryName(String qname) {
+
+	private String queryNameToPath(String qname) {
 		
-		return (qname.substring(qname.indexOf(":")+1)).toLowerCase();
-		
+		return qname.replace(":","/");
 	}
+
 	
 	private void saveSourceFile(String name, String content) throws IOException {
 		
@@ -140,37 +147,31 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 			if (!name.endsWith(".py")) name = name.concat(".py");
 	
-			File scriptFile = new File(name);
+			File file = new File(name);
+			file.getParentFile().mkdirs();
 			byte[] bytes = Objects.toString(content,"").getBytes();
-			Files.write(scriptFile.toPath(), bytes);
+			Files.write(file.toPath(), bytes);
 		}	
 	}
 
+	
 	private String wrapAsVariable(String variable, String content) {
 		
 		if (variable != null && content != null) 
 			return variable.concat(" = '''\n").concat(content).concat("\n'''");
 		else 
 			return ""; 
-			
 	}
 
-	private String createDirectoryTree() throws IOException {
+	
+	private String createRunRoot() throws IOException {
 
 		int r = Math.round((int) (Math.random() * 1_000_000_000));
 		File rootDir = new File(PYTHON_SCRIPTS_PATH + "/" + r);
-		boolean success1 = rootDir.mkdirs();
-		File snipletsDir = new File(rootDir.getAbsolutePath().concat("/sniplets"));
-		File queriesDir = new File(rootDir.getAbsolutePath().concat("/queries"));
-
-		boolean success2 = snipletsDir.mkdir();
-		boolean success3 = queriesDir.mkdir();
-
-		if (!(success1 && success2 && success3))
-			throw new IOException("Could not create temporary Python directories");
-
+		if (!rootDir.mkdirs()) 
+			throw new IOException("Could not create temporary run directory");
+		
 		return rootDir.getAbsolutePath();
 	}
-
 
 }

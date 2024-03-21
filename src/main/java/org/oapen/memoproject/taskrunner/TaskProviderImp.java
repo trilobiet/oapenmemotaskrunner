@@ -17,8 +17,6 @@ public class TaskProviderImp implements TaskProvider {
 	@Override
 	public List<Task> getRunnableTasks(LocalDate date) {
 		
-		//System.out.println(dbService.getTasks());
-		
 		List<Task> tasks = dbService.getTasks().stream()
 			.filter(task -> task.isActive())
 			.filter(task -> !task.getStartDate().isAfter(date))
@@ -36,9 +34,6 @@ public class TaskProviderImp implements TaskProvider {
 		else {
 			long unitsBetween = task.getFrequency().getChronoUnit().between(task.getStartDate(), today);
 			LocalDate dt = task.getStartDate().plus(unitsBetween, task.getFrequency().getChronoUnit());
-			
-			//System.out.println("units " + unitsBetween);
-			//System.out.println(dt + " - " + today);
 			
 			return unitsBetween >= 0 && dt.equals(today);
 		}	

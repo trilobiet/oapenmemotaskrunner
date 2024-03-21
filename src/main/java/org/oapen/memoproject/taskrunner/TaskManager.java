@@ -9,6 +9,8 @@ import org.oapen.memoproject.taskrunner.entities.Export;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.Script;
 import org.oapen.memoproject.taskrunner.entities.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -36,14 +38,16 @@ public class TaskManager  {
 	@Autowired
 	private MimeTypeService mimeTypeService;
 	
+	private static final Logger logger = 
+			LoggerFactory.getLogger(DockerPythonRunner.class); 
 	
 	public void runTasks() {
-		
-		//System.out.println("running at " + LocalDateTime.now());
 		
 		List<Task> tasks = taskProvider.getRunnableTasks(LocalDate.now());
 		
 		for (Task task: tasks) {
+			
+			logger.info("Starting task " + task.getFileName() + " for client " + task.getUsername()); 
 			
 			TaskResult taskResult = runTask(task);
 		
@@ -71,6 +75,7 @@ public class TaskManager  {
 		taskLogger.log(tr);
 	}
 	
+	
 	public TaskResult runTask(Task task) {
 		
 		ScriptBundler sb = toBundle(task.getScript());
@@ -87,7 +92,8 @@ public class TaskManager  {
 			DockerPythonRunner runner = 
 				new DockerPythonRunner(env.getProperty("docker.image.python"), env.getProperty("path.temp.pythonscripts"));
 			
-			runner.setPurgeTempFiles(env.getProperty("path.temp.pythonscripts.purge",Boolean.class));
+			// remove temp directories? (set false for testing)
+			runner.setPurgeTempFiles(env.getProperty("path.temp.pythonscripts.purge", Boolean.class));
 			
 			Either<String, String> runResult = runner.run(sb);
 			
