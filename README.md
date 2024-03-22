@@ -28,26 +28,42 @@ Save as dockerfile (or whatever name seems apt)
 
 Now run the Docker file to create a local image:
 
-    docker build . -t oapen/ubuntu2204python310 
+    docker build . -t oapen/ubuntu2204python310 -f dockerfile
+    
+You can leave out `-f dockerfile` when that file is in the same directory and named 'dockerfile' (without extension)    
 
-Call docker image ls to see the new image:
+Call docker `image ls` to see the new image:
 
     REPOSITORY                  TAG       IMAGE ID       CREATED          SIZE 
     oapen/ubuntu2204python310   latest    8ff08ccecd71   2 minutes ago   570MB
+    
+    
+#### 2.1 Set user permissions
+
+Assuming a group `docker` already was created exists (when Docker was installed, otherwise run `groupadd docker`) and the user is named `oapen`, add
+it to the docker group:
+
+    usermod -aG docker oapen
+    
+Log out and back in or restart your service for these changes to take effect.
+
 
 ### 3. Run Python script in a Docker container
 
-Now go to the pythonscripts parent directory and run any Python script:
+Now go to the `pythonscripts` (or any other name of your liking) parent directory and run any Python script:
 
-    docker run --rm -v ./pythonscripts:/root/scripts oapen/ubuntu2204python310 python3 /root/script/comic_books_rss.py
+    docker run --rm --network=host -v ./pythonscripts:/root/scripts oapen/ubuntu2204python310 python3 /root/script/comic_books_rss.py
 
 **explanation**
 
 `--rm`  
 Remove container when finished (you don’t want hundreds of disposed containers cluttering your system)
 
+`--network=host`
+Using --network="host" in your docker run command, then 127.0.0.1 in your Docker container will point to your docker host ([see this post on stack overflow](https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach)).
+
 `-v ./pythonscipts:/root/scripts`   
-'Project' the contents of the pythonscripts directory on the host system on a directory /root/scripts in the container. The directory can now be seen by the container as if it were local to the container.
+'Project' the contents of the `pythonscripts` directory on the host system on a directory /root/scripts in the container. The directory can now be seen by the container as if it were local to the container.
 
 `python3 /root/script/comic_books_rss.py`
 Run the chosen script inside the container. 

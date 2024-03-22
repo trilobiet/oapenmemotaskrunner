@@ -57,11 +57,13 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 			path = Optional.of(saveBundleAsFiles(scriptBundle));
 
-			// --rm : delete Docker container when ready
-			// -B   : do not write Python cache files for imports
-			// -v   : map a local directory to a directory IN the container 
+			// --rm           : delete Docker container when ready
+			// --network=host :connect from Docker container to MySQL instance on localhost 127.0.0.1
+			//                 https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach 
+			// -B             : do not write Python cache files for imports
+			// -v             : map a local directory to a directory IN the container 
 			String cmd = 
-				  "docker run --rm " + "-v " + path.get() + ":/root/scripts "
+				  "docker run --rm --network=host -v " + path.get() + ":/root/scripts "
 				+ DOCKER_IMAGE + " python3 -B /root/scripts/main.py";
 
 			// System.out.println(cmd);
