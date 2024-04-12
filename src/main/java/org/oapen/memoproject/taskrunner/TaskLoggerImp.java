@@ -13,7 +13,7 @@ public class TaskLoggerImp implements TaskLogger {
 	
 	@Autowired
 	private DBService dbService; 
-
+	
 	@Override
 	public void log(TaskResult tl) {
 		

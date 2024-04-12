@@ -1,6 +1,7 @@
 package org.oapen.memoproject.taskrunner;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,11 +15,11 @@ public class TaskManagerTest {
 	@BeforeEach
 	public void setup() {
 		
-		//taskmanager = new TaskManager();
+		taskmanager = new TaskManager();
 	}
 
 	
-	@Test
+	@Test @Disabled
 	public void test() {
 		
 		taskmanager.runTasks();

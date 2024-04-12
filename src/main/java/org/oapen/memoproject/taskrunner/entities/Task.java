@@ -33,18 +33,16 @@ import lombok.ToString;
 @Immutable
 @Subselect(
     "SELECT "
-  + "  t.id, t.id_script, h.username, t.file_name, t.extension, t.is_active, t.start_date, t.frequency, l.date, l.is_success "
-  + "FROM "
-  + "  task t "
-  + "    JOIN homedir h ON t.id_homedir = h.id"
-  + "    LEFT JOIN runlog l ON l.id_task = t.id AND date = ("
-  + "      SELECT MAX(date)"
-  + "      FROM runlog"
-  + "      WHERE t.id = runlog.id_task"
-  + "    ) "
-  //+ "WHERE "
-  //+ "  t.is_active = true "
-  //+ "  AND t.start_date < now() "
+    + "	t.id, t.id_script, h.username, t.file_name, t.extension, t.is_active, t.start_date, t.frequency, l.date, l.is_success "
+    + "FROM "
+    + "	task t "
+    + "JOIN homedir h ON t.id_homedir = h.id "
+    + "LEFT JOIN runlog l ON l.id = ("  // We must only get at most 1 runlog record (multiple records may have the same timestamp)
+    + "	SELECT l1.id FROM runlog AS l1 "
+    + "	WHERE l1.id_task = t.id "
+    + "	ORDER BY l1.date DESC "
+    + "	LIMIT 1 "
+    + ")"
 )
 public class Task implements Serializable {
 	

@@ -76,10 +76,12 @@ public final class DockerPythonRunner implements ScriptRunner {
 			DefaultExecutor executor = DefaultExecutor.builder().get();
 			executor.setStreamHandler(streamHandler);
 			executor.setExitValues(null); // allow all exit values, pass Python errors to Java
+			
+			logger.info("Spinning up Python script in container [" + cmd + "]");
 
 			int exitValue = executor.execute(cmdLine);
 			String output = outputStream.toString().trim();
-
+			
 			if (exitValue == 0)
 				result = Either.right(output);
 			else
@@ -92,6 +94,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 		} finally {
 
 			if (path.isPresent() && purgeTempFiles) cleanUp(path.get());
+			logger.info("Script running completed");
 		}
 
 		return result;

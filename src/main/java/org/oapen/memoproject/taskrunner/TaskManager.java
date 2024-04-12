@@ -95,6 +95,7 @@ public class TaskManager  {
 			// remove temp directories? (set false for testing)
 			runner.setPurgeTempFiles(env.getProperty("path.temp.pythonscripts.purge", Boolean.class));
 			
+			// Now run the task...!
 			Either<String, String> runResult = runner.run(sb);
 			
 			if (runResult.isRight()) 
