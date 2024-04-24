@@ -2,11 +2,13 @@ package org.oapen.memoproject.taskrunner.entities;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -34,6 +36,7 @@ public class Export implements Serializable {
 	private Task task;
 	
 	@NonNull
+	@Lob @Column(length = 2_147_483_647) // Tell Hibernate that this field is a LONGTEXT
 	private String content;
 
 	private String mimetype;

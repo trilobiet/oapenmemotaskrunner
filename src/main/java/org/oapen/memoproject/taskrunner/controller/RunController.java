@@ -80,15 +80,13 @@ public class RunController {
     		
     		logger.info("Running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
     		
-    		// TODO does this happen? check in DB
+    		// Write runlog line (DB)
 			taskManager.logTaskResult(taskResult);
 
 			if (taskResult.isSuccess()) {
 				
-				// TODO does this happen? set log
-				
-				taskResult.setOutput(""); // remove data here
 				taskManager.saveExport(task, taskResult);
+				taskResult.setOutput("[output suppressed - download file to get contents]"); // remove data here
 				return new ResponseEntity<Object>(taskResultToJson(taskResult), HttpStatus.OK);
 			}
 			else {

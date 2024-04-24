@@ -82,8 +82,11 @@ public final class DockerPythonRunner implements ScriptRunner {
 			int exitValue = executor.execute(cmdLine);
 			String output = outputStream.toString().trim();
 			
-			if (exitValue == 0)
+			if (exitValue == 0) {
 				result = Either.right(output);
+				// Check if the end of the output is not cut off
+				logger.debug(output.substring(output.length()-Math.min(output.length(),200)));
+			}
 			else
 				result = Either.left("exit value "+ exitValue + ": " + output);
 
