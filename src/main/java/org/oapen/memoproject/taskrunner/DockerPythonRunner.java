@@ -48,9 +48,9 @@ public final class DockerPythonRunner implements ScriptRunner {
 	
 
 	@Override
-	public Either<String, String> run(ScriptBundler scriptBundle) {
+	public Either<String, ByteArrayOutputStream> run(ScriptBundler scriptBundle) {
 
-		Either<String, String> result;
+		Either<String, ByteArrayOutputStream> result;
 		Optional<String> path = Optional.empty();
 		
 		try {
@@ -66,13 +66,12 @@ public final class DockerPythonRunner implements ScriptRunner {
 				  "docker run --rm --network=host -v " + path.get() + ":/root/scripts "
 				+ DOCKER_IMAGE + " python3 -B /root/scripts/main.py";
 
-			// System.out.println(cmd);
-			
+			// https://www.baeldung.com/java-working-with-python
 			CommandLine cmdLine = CommandLine.parse(cmd);
 
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-
+			
 			DefaultExecutor executor = DefaultExecutor.builder().get();
 			executor.setStreamHandler(streamHandler);
 			executor.setExitValues(null); // allow all exit values, pass Python errors to Java
@@ -80,15 +79,14 @@ public final class DockerPythonRunner implements ScriptRunner {
 			logger.info("Spinning up Python script in container [" + cmd + "]");
 
 			int exitValue = executor.execute(cmdLine);
-			String output = outputStream.toString().trim();
 			
-			if (exitValue == 0) {
-				result = Either.right(output);
-				// Check if the end of the output is not cut off
-				logger.debug(output.substring(output.length()-Math.min(output.length(),200)));
-			}
-			else
-				result = Either.left("exit value "+ exitValue + ": " + output);
+			if (exitValue == 0) { 
+				result = Either.right(outputStream);
+			}	
+			else {
+				result = Either.left("exit value "+ exitValue + ": " + outputStream.toString());
+				outputStream.close();
+			}	
 
 		} catch (Exception e) {
 
@@ -149,13 +147,13 @@ public final class DockerPythonRunner implements ScriptRunner {
 	}
 
 	
-	private void saveSourceFile(String name, String content) throws IOException {
+	private void saveSourceFile(String path, String content) throws IOException {
 		
-		if (name != null) {
+		if (path != null) {
 
-			if (!name.endsWith(".py")) name = name.concat(".py");
+			if (!path.endsWith(".py")) path = path.concat(".py");
 	
-			File file = new File(name);
+			File file = new File(path);
 			file.getParentFile().mkdirs();
 			byte[] bytes = Objects.toString(content,"").getBytes();
 			Files.write(file.toPath(), bytes);

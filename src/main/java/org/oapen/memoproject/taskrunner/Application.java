@@ -20,18 +20,33 @@ public class Application {
 	private static final Logger logger = 
 			LoggerFactory.getLogger(DockerPythonRunner.class); 
 	
+	
 	public static void main(String[] args) {
 		
 		SpringApplication.run(Application.class, args);
+
+		logger.info("===============================");
+		logger.info("Heap total memory: " + formatSize(Runtime.getRuntime().totalMemory()));
+		logger.info("Heap max memory: " + formatSize(Runtime.getRuntime().maxMemory()));
+		logger.info("Heap free memory: " + formatSize(Runtime.getRuntime().freeMemory()));
+		logger.info("===============================");
 	}
+	
 	
 	// "0 0 0 * * *" second, minute, hour, day of month, month, and day of week
 	@Scheduled(cron = "${taskrunner.cronschedule}")
 	public void runDaily() {
 
-		logger.info("Starting runTasks at " + LocalDateTime.now());
+		logger.info("Start scheduled running tasks at " + LocalDateTime.now());
 		taskmanager.runTasks();
-		logger.info("Finished runTasks at " + LocalDateTime.now());
+		logger.info("Finished scheduled running tasks at " + LocalDateTime.now());
 	}
+	
+	// Readable heap size
+	public static String formatSize(long v) {
+		if (v < 1024) return v + " B";
+		int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
+		return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
+    }
 
 }

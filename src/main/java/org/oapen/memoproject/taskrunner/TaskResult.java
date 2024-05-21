@@ -1,5 +1,6 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,10 +18,9 @@ public class TaskResult {
 	private boolean isSuccess;
 	private String message;
 	private LocalDateTime dateTime;
-	@ToString.Exclude
-	private String output;
+	private ByteArrayOutputStream output;
 	
-	public void succeed(String message, String output) {
+	public void succeed(String message, ByteArrayOutputStream output) {
 		
 		this.isSuccess = true;
 		this.message = message;

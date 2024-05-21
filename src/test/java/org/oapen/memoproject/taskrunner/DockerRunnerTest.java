@@ -2,6 +2,8 @@ package org.oapen.memoproject.taskrunner;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+
 import org.junit.jupiter.api.Test;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.Script;
@@ -45,15 +47,15 @@ public class DockerRunnerTest {
 		
 		ScriptBundler sb = new ScriptBundler(s).includeScript(i1).includeScript(i2).addQuery(q1);
 		
-		Either<String, String> result = 
+		Either<String, ByteArrayOutputStream> result = 
 			new DockerPythonRunner(DOCKER_IMAGE, PYTHON_SCRIPTS_PATH).run(sb);
 		
 		System.out.println(result);
 		
 		assertTrue(result.isRight());
-		assertTrue(result.get().contains("Script 1"));
-		assertTrue(result.get().contains("Script 2"));
-		assertTrue(result.get().contains("Select 'I am a resultset'"));
+		assertTrue(result.get().toString().contains("Script 1"));
+		assertTrue(result.get().toString().contains("Script 2"));
+		assertTrue(result.get().toString().contains("Select 'I am a resultset'"));
 	}
 	
 	@Test
@@ -67,7 +69,7 @@ public class DockerRunnerTest {
 		
 		ScriptBundler sb = new ScriptBundler(s);
 		
-		Either<String, String> result = 
+		Either<String, ByteArrayOutputStream> result = 
 			new DockerPythonRunner(DOCKER_IMAGE, PYTHON_SCRIPTS_PATH).run(sb);
 		
 		assertTrue(!result.isRight());
@@ -86,7 +88,7 @@ public class DockerRunnerTest {
 		
 		ScriptBundler sb = new ScriptBundler(s);
 		
-		Either<String, String> result = 
+		Either<String, ByteArrayOutputStream> result = 
 			new DockerPythonRunner(DOCKER_IMAGE, PYTHON_SCRIPTS_PATH).run(sb);
 
 		System.out.println(result);

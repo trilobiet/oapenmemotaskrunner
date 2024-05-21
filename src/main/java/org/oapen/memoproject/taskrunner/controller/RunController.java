@@ -15,9 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -58,6 +60,7 @@ public class RunController {
 	private static final Logger logger = 
 		LoggerFactory.getLogger(RunController.class);
 	
+	
     @GetMapping(value = "/runtask/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     /**
@@ -75,18 +78,21 @@ public class RunController {
     	Optional<Task> oTask = dbService.findTaskById(id);
     	
     	ResponseEntity<Object> resp = oTask.map( task -> {
+    		
+    		logger.info("Start user requested running task " + task.getFileName() + " for client " + task.getUsername());
 			
     		TaskResult taskResult = taskManager.runTask(task);
     		
-    		logger.info("Running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
+    		logger.info("Finished user requested running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
     		
     		// Write runlog line (DB)
 			taskManager.logTaskResult(taskResult);
 
 			if (taskResult.isSuccess()) {
 				
-				taskManager.saveExport(task, taskResult);
-				taskResult.setOutput("[output suppressed - download file to get contents]"); // remove data here
+				Optional<String> p = taskManager.saveToFile(taskResult.getOutput(), task.getPath());
+				if (p.isPresent()) logger.error(p.get());
+				taskResult.setOutput(null); // remove data here
 				return new ResponseEntity<Object>(taskResultToJson(taskResult), HttpStatus.OK);
 			}
 			else {
@@ -120,20 +126,32 @@ public class RunController {
     	Optional<Task> oTask = dbService.findTaskById(id);
     	
     	ResponseEntity<?> resp = oTask.map( task -> {
+    		
+    		logger.info("Start user requested dry running task on request " + task.getFileName() + " for client " + task.getUsername());
 			
     		TaskResult taskResult = taskManager.runTask(task);
     		
-    		logger.info("Dry running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
+    		logger.info("Finished user requested dry running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
     		
 			if (taskResult.isSuccess()) { 
 				
 				String fileName = task.getFileName();
 				String mimeType = mimeTypeService.getMimeTypeFromFileName(fileName);
 				
+				/*
 				return ResponseEntity.ok()
 					.header("Content-Type", mimeType + ";charset=utf-8")
 					.header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-					.body(taskResult.getOutput());
+					.body(taskResult.getOutput().toString());
+				*/
+				
+				BodyBuilder bb = ResponseEntity.ok()
+					.header("Content-Type", mimeType + ";charset=utf-8")
+					.header("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+				// No need to close, Spring handles this
+				ByteArrayResource res = new ByteArrayResource(taskResult.getOutput().toByteArray());
+				return bb.body(res);
 			}
 			else 
 				return new ResponseEntity<>(taskResult, HttpStatus.INTERNAL_SERVER_ERROR);

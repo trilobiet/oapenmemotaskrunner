@@ -1,11 +1,16 @@
 package org.oapen.memoproject.taskrunner;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import org.oapen.memoproject.taskrunner.entities.Export;
 import org.oapen.memoproject.taskrunner.entities.Query;
 import org.oapen.memoproject.taskrunner.entities.Script;
 import org.oapen.memoproject.taskrunner.entities.Task;
@@ -30,16 +35,11 @@ public class TaskManager  {
 	private Environment env;	
 	
 	@Autowired
-	private ExportStore exportStore;	
-	
-	@Autowired
 	private DependenciesCollector dpdCollector;
-	
-	@Autowired
-	private MimeTypeService mimeTypeService;
 	
 	private static final Logger logger = 
 			LoggerFactory.getLogger(DockerPythonRunner.class); 
+	
 	
 	public void runTasks() {
 		
@@ -47,26 +47,19 @@ public class TaskManager  {
 		
 		for (Task task: tasks) {
 			
-			logger.info("Starting task " + task.getFileName() + " for client " + task.getUsername()); 
+			logger.info("Starting scheduled task " + task.getFileName() + " for client " + task.getUsername()); 
 			
 			TaskResult taskResult = runTask(task);
-		
-			// For each successful task save the resulting document to the export store
-			if (taskResult.isSuccess()) saveExport(task, taskResult);
 			
+			logger.info("Finished scheduled task " + task.getFileName());
+			
+			Optional<String> saveError = saveToFile(taskResult.getOutput(), task.getPath());
+			
+			if (!saveError.isEmpty()) taskResult.fail(saveError.get());
+		
 			// Finally log
 			logTaskResult(taskResult);
 		}
-	}
-	
-
-	public boolean saveExport(Task task, TaskResult tr) {
-		
-		Export exp = new Export(task, tr.getOutput());
-
-		exp.setMimetype(mimeTypeService.getMimeTypeFromFileName(task.getFileName()));
-		boolean isSaved = exportStore.save(exp);
-		return isSaved;
 	}
 	
 	
@@ -79,13 +72,13 @@ public class TaskManager  {
 	public TaskResult runTask(Task task) {
 		
 		ScriptBundler sb = toBundle(task.getScript());
-		TaskResult taskLog = TaskResult.builder().idTask(task.getId()).build();
+		TaskResult taskResult = TaskResult.builder().idTask(task.getId()).build();
 		
 		Map<String, List<String>> illegalInstructions = CodeGuard.illegalInstructions(sb);
 		
 		if (!illegalInstructions.isEmpty())  
 		
-			taskLog.fail("Illegal instructions found: " + illegalInstructions.toString());
+			taskResult.fail("Illegal instructions found: " + illegalInstructions.toString());
 
 		else {
 			
@@ -96,19 +89,41 @@ public class TaskManager  {
 			runner.setPurgeTempFiles(env.getProperty("path.temp.pythonscripts.purge", Boolean.class));
 			
 			// Now run the task...!
-			Either<String, String> runResult = runner.run(sb);
+			Either<String, ByteArrayOutputStream> output = runner.run(sb);
 			
-			if (runResult.isRight()) 
-				taskLog.succeed("OK", runResult.get());
+			if (output.isRight()) 
+				taskResult.succeed("OK",output.get());
 			else 
-				taskLog.fail(runResult.getLeft()); 
+				taskResult.fail(output.getLeft()); 
 		}
 		
-		taskLog.setDateTime(LocalDateTime.now());
-		return taskLog;
+		taskResult.setDateTime(LocalDateTime.now());
+		return taskResult;
 	}
 	
+	
+	// On success return empty Optional, on failure an error message
+	public Optional<String> saveToFile(ByteArrayOutputStream stream, String path) {
 		
+		String fullPath = env.getProperty("path.exports") + path;
+
+		File file = new File(fullPath);
+		file.getParentFile().mkdirs();
+		
+		try(OutputStream outputStream = new FileOutputStream(fullPath)) {
+			
+		    stream.writeTo(outputStream);
+		    logger.info("Saved file " + fullPath);
+		    return Optional.empty();
+		    
+		} catch (IOException e) {
+			
+			logger.error("Could not save file " + fullPath);
+			return Optional.of(e.getMessage());
+		}
+	}
+	
+	
 	private ScriptBundler toBundle(Script script) {
 		
 		List<Query> queries = dpdCollector.getQueries(script);
