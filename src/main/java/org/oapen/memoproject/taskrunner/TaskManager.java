@@ -122,7 +122,7 @@ public class TaskManager  {
 			return Optional.of(e.getMessage());
 		}
 	}
-	
+
 	
 	private ScriptBundler toBundle(Script script) {
 		

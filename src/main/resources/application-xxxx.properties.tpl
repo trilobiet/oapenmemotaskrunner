@@ -11,6 +11,7 @@ logging.level.oapen.memoproject.taskrunner=INFO
 
 docker.image.python=oapen/ubuntu2204python310
 path.temp.pythonscripts=${user.home}/[...]/oapenmemo/tmp_python/
+path.exports=${user.home}/oapen/oapenmemo/exports/
 
 spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.format_sql=false

@@ -70,6 +70,12 @@ public class Task implements Serializable {
 		
 		return username + "/" + fileName;
 	}
+
+	public String getFlattenedPath() {
+		
+		return username + "_" + fileName;
+	}
+	
 	
 }
 

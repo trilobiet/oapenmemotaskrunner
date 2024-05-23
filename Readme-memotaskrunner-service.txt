@@ -1,4 +1,5 @@
 # In /etc/systemd/system create a file named oapen-memo-taskrunner.service with the following content:
+# https://www.baeldung.com/linux/run-java-application-as-service
 
 [Unit]
 Description=OAPEN MEMO Taskrunner
@@ -13,6 +14,8 @@ Group=oapen
 Type=simple
 
 ExecStart=java -Xmx1G -jar /home/oapen/oapenmemo/taskrunner.jar
+ExecStop=/bin/kill -15 $MAINPID
+
 Restart=always
 RestartSec=5s
 

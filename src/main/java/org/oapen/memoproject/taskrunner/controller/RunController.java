@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.oapen.memoproject.taskrunner.DBService;
-import org.oapen.memoproject.taskrunner.MimeTypeService;
 import org.oapen.memoproject.taskrunner.TaskManager;
 import org.oapen.memoproject.taskrunner.TaskResult;
 import org.oapen.memoproject.taskrunner.entities.Task;
@@ -15,11 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity.BodyBuilder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -46,9 +44,6 @@ public class RunController {
 	@Autowired
 	private Environment env;	
 	
-	@Autowired
-	private MimeTypeService mimeTypeService;
-	
 	private final Map<String,String> msg404 = new HashMap<>();
 	private final Map<String,String> msgBusy = new HashMap<>();
 	
@@ -60,17 +55,42 @@ public class RunController {
 	private static final Logger logger = 
 		LoggerFactory.getLogger(RunController.class);
 	
+
 	
-    @GetMapping(value = "/runtask/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     /**
-     * Run a task, and log result. When successful, only return status HTTP OK.
+     * Run a task, and log result. Save the export file to its client directory destination. 
+     * When successful, only return status HTTP OK.
      * Otherwise return a JSON response describing the error.
      *   
      * @param id
      * @return
      */
-    public ResponseEntity<Object> runTask( @PathVariable UUID id ) {
+    @GetMapping(value = "/runtask/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> runTask(@PathVariable UUID id) {
+    	
+    	return runTask(id, false);
+    }
+
+    
+    /**
+     * Dry run a task, but do NOT log result. Save the export file to a temp directory.
+     * When successful, only return status HTTP OK.
+     * Otherwise return a JSON response describing the error.
+     *   
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/dryruntask/{id}")
+    @Transactional(timeout = 300_000)
+    @ResponseBody
+    public ResponseEntity<?> dryRunTask(@PathVariable UUID id) {
+    	
+    	return runTask(id, true);
+    }
+    
+    
+    private ResponseEntity<?> runTask(UUID id, boolean isDry) {
     	
     	// refuse running task when scheduled taskrunner is busy
     	if (inBusyPeriod()) return new ResponseEntity<>(msgBusy, HttpStatus.SERVICE_UNAVAILABLE);
@@ -79,18 +99,23 @@ public class RunController {
     	
     	ResponseEntity<Object> resp = oTask.map( task -> {
     		
-    		logger.info("Start user requested running task " + task.getFileName() + " for client " + task.getUsername());
+    		if (isDry) logger.info("====================== START DRY RUNNING ======================");
+    		logger.info("Start user requested task " + task.getFileName() + " for client " + task.getUsername());
 			
     		TaskResult taskResult = taskManager.runTask(task);
     		
     		logger.info("Finished user requested running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
+    		if (isDry) logger.info("======================= END DRY RUNNING =======================");
     		
     		// Write runlog line (DB)
 			taskManager.logTaskResult(taskResult);
 
 			if (taskResult.isSuccess()) {
+
+				String path = task.getPath();
+				if (isDry) path = "tmp/" + task.getFlattenedPath();
 				
-				Optional<String> p = taskManager.saveToFile(taskResult.getOutput(), task.getPath());
+				Optional<String> p = taskManager.saveToFile(taskResult.getOutput(), path);
 				if (p.isPresent()) logger.error(p.get());
 				taskResult.setOutput(null); // remove data here
 				return new ResponseEntity<Object>(taskResultToJson(taskResult), HttpStatus.OK);
@@ -107,62 +132,6 @@ public class RunController {
     	
     	return resp; 
     }
-
-    
-    @GetMapping(value = "/dryruntask/{id}")
-    @ResponseBody
-    /**
-     * Run a task, but do not log nor save results. When successful, return body as a downloadable file.
-     * Otherwise return a JSON response describing the error.
-     *  
-     * @param id
-     * @return
-     */
-    public ResponseEntity<?> dryRunTask( @PathVariable UUID id ) {
-    	
-    	// refuse running task when scheduled taskrunner is busy
-    	if (inBusyPeriod()) return new ResponseEntity<>(msgBusy, HttpStatus.SERVICE_UNAVAILABLE);
-    	
-    	Optional<Task> oTask = dbService.findTaskById(id);
-    	
-    	ResponseEntity<?> resp = oTask.map( task -> {
-    		
-    		logger.info("Start user requested dry running task on request " + task.getFileName() + " for client " + task.getUsername());
-			
-    		TaskResult taskResult = taskManager.runTask(task);
-    		
-    		logger.info("Finished user requested dry running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
-    		
-			if (taskResult.isSuccess()) { 
-				
-				String fileName = task.getFileName();
-				String mimeType = mimeTypeService.getMimeTypeFromFileName(fileName);
-				
-				/*
-				return ResponseEntity.ok()
-					.header("Content-Type", mimeType + ";charset=utf-8")
-					.header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-					.body(taskResult.getOutput().toString());
-				*/
-				
-				BodyBuilder bb = ResponseEntity.ok()
-					.header("Content-Type", mimeType + ";charset=utf-8")
-					.header("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-
-				// No need to close, Spring handles this
-				ByteArrayResource res = new ByteArrayResource(taskResult.getOutput().toByteArray());
-				return bb.body(res);
-			}
-			else 
-				return new ResponseEntity<>(taskResult, HttpStatus.INTERNAL_SERVER_ERROR);
-    	})
-    	.orElse( 
-    		// return a 404	
-    		new ResponseEntity<>(msg404, HttpStatus.NOT_FOUND)
-    	);
-    	
-    	return resp; 
-    }
     
     
     private String taskResultToJson(TaskResult taskResult) {
@@ -171,7 +140,7 @@ public class RunController {
 		om.registerModule(new JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);;
 
 		try {
-			System.out.println(om.writeValueAsString(taskResult));
+			// System.out.println(om.writeValueAsString(taskResult));
 			return om.writeValueAsString(taskResult);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
