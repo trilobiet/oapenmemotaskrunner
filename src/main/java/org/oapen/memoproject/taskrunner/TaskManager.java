@@ -47,11 +47,14 @@ public class TaskManager  {
 		
 		for (Task task: tasks) {
 			
-			logger.info("Starting scheduled task " + task.getFileName() + " for client " + task.getUsername()); 
+    		logger.info("====================== START SCHEDULED RUN ======================");
+    		logger.info("Task " + task.getFileName() + " for client " + task.getUsername());
 			
 			TaskResult taskResult = runTask(task);
 			
-			logger.info("Finished scheduled task " + task.getFileName());
+    		logger.info(task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
+    		if (!taskResult.isSuccess()) logger.info("Message: " + taskResult.getMessage());
+    		logger.info("======================= END SCHEDULED RUN =======================");
 			
 			Optional<String> saveError = saveToFile(taskResult.getOutput(), task.getPath());
 			

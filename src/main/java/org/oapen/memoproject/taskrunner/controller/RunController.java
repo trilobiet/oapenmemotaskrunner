@@ -29,7 +29,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
- * Allows clients to call running or dry running tasks by http
+ * Allows users to call running or dry running tasks by http.
+ * (Scheduled task do not use this controller.)
  * 
  */
 @RestController
@@ -99,22 +100,27 @@ public class RunController {
     	
     	ResponseEntity<Object> resp = oTask.map( task -> {
     		
-    		if (isDry) logger.info("====================== START DRY RUNNING ======================");
-    		logger.info("Start user requested task " + task.getFileName() + " for client " + task.getUsername());
+    		String runtype = isDry?"DRY":"";
+    		
+    		logger.info("====================== START USER REQUESTED {} RUN ======================", runtype);
+    		logger.info("Task " + task.getFileName() + " for client " + task.getUsername());
 			
     		TaskResult taskResult = taskManager.runTask(task);
     		
-    		logger.info("Finished user requested running task " + task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
-    		if (isDry) logger.info("======================= END DRY RUNNING =======================");
+    		logger.info(task.getFileName() + ": " + (taskResult.isSuccess()?"OK":"FAIL"));
+    		if (!taskResult.isSuccess()) logger.info("Message: " + taskResult.getMessage());
+    		logger.info("======================= END USER REQUESTED {} RUN =======================", runtype);
     		
-    		// Write runlog line (DB)
-			taskManager.logTaskResult(taskResult);
+    		// Write runlog line (DB) UNLESS we are running dry
+			if (!isDry) taskManager.logTaskResult(taskResult);
 
 			if (taskResult.isSuccess()) {
 
 				String path = task.getPath();
 				if (isDry) path = "tmp/" + task.getFlattenedPath();
 				
+				// ResponseEntity contains info about the run, but *not* the result! 
+				// (It could get too big, so it is only available through download)  
 				Optional<String> p = taskManager.saveToFile(taskResult.getOutput(), path);
 				if (p.isPresent()) logger.error(p.get());
 				taskResult.setOutput(null); // remove data here

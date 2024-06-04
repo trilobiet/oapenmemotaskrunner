@@ -8,6 +8,7 @@ spring.datasource.password=******
 logging.file.name=${user.home}/[...]/oapenmemo/logs/oapen_memo-taskrunner.log
 logging.level.root=INFO
 logging.level.oapen.memoproject.taskrunner=INFO
+logging.logback.rollingpolicy.max-history=40
 
 docker.image.python=oapen/ubuntu2204python310
 path.temp.pythonscripts=${user.home}/[...]/oapenmemo/tmp_python/
