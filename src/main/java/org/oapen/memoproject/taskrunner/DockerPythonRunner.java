@@ -7,6 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -23,7 +26,6 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 	private final String PYTHON_SCRIPTS_PATH; // = System.getProperty("user.home") + "/tmp_python/";
 	private final String DOCKER_IMAGE; // = "oapen/ubuntu2204python310";
-	
 	private boolean purgeTempFiles = true;
 	
 	private static final Logger logger = 
@@ -52,21 +54,25 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		Either<String, ByteArrayOutputStream> result;
 		Optional<String> path = Optional.empty();
+		int containerName = Math.round((int) (Math.random() * 1_000_000_000));
 		
 		try {
-
+			
 			path = Optional.of(saveBundleAsFiles(scriptBundle));
 
 			// -tty           : allocate a pseudo-TTY (https://docs.docker.com/reference/cli/docker/container/run/#tty)
 			//                  without this option output may get cut off when it is too long
-			//                  (this option is the same as -t). 
-			// --rm           : delete Docker container when ready
-			// --network=host :connect from Docker container to MySQL instance on localhost 127.0.0.1
-			//                 https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach 
+			//                  (this option is the same as -t).
+			// --name         : (random) name to identify the container by for later closing.				
+			// --rm           : delete Docker container when ready 
+			//                  (Do NOT use this: it may close the container before output is fully read.
+			//                   instead close the container explicitly, by name, after closing the output stream)
+			// --network=host : connect from Docker container to MySQL instance on localhost 127.0.0.1
+			//                  https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach 
 			// -B             : do not write Python cache files for imports
 			// -v             : map a local directory to a directory IN the container 
 			String cmd = 
-				  "docker run --tty --rm --network=host -v " + path.get() + ":/root/scripts "
+				  "docker run --tty --name " + containerName + " --network=host -v " + path.get() + ":/root/scripts "
 				+ DOCKER_IMAGE + " python3 -B /root/scripts/main.py";
 
 			// https://www.baeldung.com/java-working-with-python
@@ -84,12 +90,13 @@ public final class DockerPythonRunner implements ScriptRunner {
 			int exitValue = executor.execute(cmdLine);
 			
 			if (exitValue == 0) { 
+				logger.info("Size of output stream: " + outputStream.size());
 				result = Either.right(outputStream);
 			}	
 			else {
 				result = Either.left("exit value "+ exitValue + ": " + outputStream.toString());
 				outputStream.close();
-			}	
+			}
 
 		} catch (Exception e) {
 
@@ -97,7 +104,12 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 		} finally {
 
-			if (path.isPresent() && purgeTempFiles) cleanUp(path.get());
+			// We can clean up the temp files right away, they only contain code
+			if (path.isPresent() && purgeTempFiles) cleanUpTempFiles(path.get());
+
+			// Remove the container after x seconds so to make sure the output has been captured
+			scheduleContainerCleanup(containerName, 30);
+
 			logger.info("Script running completed");
 		}
 
@@ -105,7 +117,7 @@ public final class DockerPythonRunner implements ScriptRunner {
 	}
 	
 
-	private void cleanUp(String path) {
+	private void cleanUpTempFiles(String path) {
 
 		try {
 			FileSystemUtils.deleteRecursively(Path.of(path));
@@ -114,6 +126,25 @@ public final class DockerPythonRunner implements ScriptRunner {
 		}
 	}
 
+	
+	private void scheduleContainerCleanup(int name, int seconds) {
+
+		ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+		
+		scheduledExecutorService.schedule(
+		    () -> {
+		    	try {
+					DefaultExecutor.builder().get().execute(CommandLine.parse("docker rm " + name));
+					logger.info("Container " + name + " successfully removed");
+					scheduledExecutorService.shutdown();
+				} catch (IOException e) { 
+					logger.warn("Could not remove container " + name);
+				}
+		    } ,
+		    seconds, TimeUnit.SECONDS 
+		); 
+	}
+	
 	
 	public String saveBundleAsFiles(ScriptBundler scriptBundle) throws IOException {
 

@@ -123,7 +123,7 @@ public class RunController {
 				// (It could get too big, so it is only available through download)  
 				Optional<String> p = taskManager.saveToFile(taskResult.getOutput(), path);
 				if (p.isPresent()) logger.error(p.get());
-				taskResult.setOutput(null); // remove data here
+				taskResult.setOutput(null); // remove data here (not to be shown in json)
 				return new ResponseEntity<Object>(taskResultToJson(taskResult), HttpStatus.OK);
 			}
 			else {

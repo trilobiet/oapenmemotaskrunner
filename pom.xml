@@ -14,7 +14,7 @@
 	
 	<groupId>org.oapen.memoproject</groupId>
 	<artifactId>taskrunner</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<name>taskrunner</name>
 	<description>OAPEN Taskrunner Application for MEMO Project</description>
 

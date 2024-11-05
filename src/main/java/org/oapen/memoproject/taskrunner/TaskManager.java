@@ -116,7 +116,7 @@ public class TaskManager  {
 		try(OutputStream outputStream = new FileOutputStream(fullPath)) {
 			
 		    stream.writeTo(outputStream);
-		    logger.info("Saved file " + fullPath);
+		    logger.info("Saved file (" + stream.size() + " bytes) " + fullPath);
 		    return Optional.empty();
 		    
 		} catch (IOException e) {

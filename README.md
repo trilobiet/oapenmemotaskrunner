@@ -37,8 +37,26 @@ Call docker `image ls` to see the new image:
     REPOSITORY                  TAG       IMAGE ID       CREATED          SIZE 
     oapen/ubuntu2204python310   latest    8ff08ccecd71   2 minutes ago   570MB
     
+#### 2.1 Docker version >= 24.0.7
     
-#### 2.1 Set user permissions
+NB. Due to a bug in older Docker versions (https://github.com/moby/moby/issues/45689) you must have Docker 24.0.7 (or higher) installed.
+To check which version of Docker is currently installed: 
+
+	docker version
+	
+Or a less verbose disclosure:
+
+	docker --version 
+	
+Upgrading Docker:
+
+	> sudo apt update
+	> sudo apt upgrade docker 		    
+
+After upgrading Docker, images must be re-fetched and Docker files rebuilt.
+
+    
+#### 2.2 Set user permissions
 
 Assuming a group `docker` already was created exists (when Docker was installed, otherwise run `groupadd docker`) and the user is named `oapen`, add
 it to the docker group:
