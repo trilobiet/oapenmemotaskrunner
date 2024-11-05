@@ -39,7 +39,10 @@ Call docker `image ls` to see the new image:
     
 #### 2.1 Docker version >= 24.0.7
     
-NB. Due to a bug in older Docker versions (https://github.com/moby/moby/issues/45689) you must have Docker 24.0.7 (or higher) installed.
+NB. Due to a bug in older Docker versions (https://github.com/moby/moby/issues/45689) you must have Docker 24.0.7 (or higher) installed.   
+
+This bug causes data written to `stdout` by Docker for reading by the Java application to be truncated. Output is closed prematurely by Docker.   
+ 
 To check which version of Docker is currently installed: 
 
 	docker version
