@@ -94,7 +94,7 @@ These directories at maximum hold just as many files as there are tasks, because
 
 This package runs as a service. 
 
-- Copy the `taskrunner-x.y.z.jar` to the user's (`oapen`) home directory;
+- Copy `taskrunner-x.y.z.jar` to the user's (`oapen`) home directory;
 - Create a symlink `ln -s taskrunner-x.y.z.jar taskrunner.jar`;
 - In `/etc/systemd/system` create a file named `oapen-memo-taskrunner.service` with the content
   copied from [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt);
