@@ -43,7 +43,8 @@ When extra Python library packages are needed, a new Docker image must be create
 ## Configuration
 
 * `server.port`   
-   Choose a free port (e.g. 8085) to map your external web server (NGINX) to.
+   Choose a free port (e.g. 8085) to access the Task runner by HTTP, internally by the Task Manager, or externally for testing purposes or
+   when the Task manager runs on a different machine. In that case map your external web server (NGINX) to the designated port.
 * `spring.datasource.url`   
    Database url (`jdbc:mysql://12.34.56.123:3306/oapen_memo?reconnect=true&rewriteBatchedStatements=true`)
 * `spring.datasource.username`   
@@ -54,13 +55,13 @@ When extra Python library packages are needed, a new Docker image must be create
    See below, Annex: A Docker image to run Python scripts
 * `path.temp.pythonscripts`   
    MEMO Taskrunner constructs a temporary file tree for its Python scripts and included queries and libraries.
-   This will be the root of that directory (`${user.home}/oapen/oapenmemo/tmp_python/`). You can choose, for debugging purposes,
+   This will be the root of that directory (`${user.home}/oapenmemo/tmp_python/`). You can choose, for debugging purposes,
    to not remove the generated Python files after a task has finished running (setting `path.temp.pythonscripts.purge`).    
    See below (Annex: Temporary Python script file tree) for detailed information about the temporary file tree.
 * `path.temp.pythonscripts.purge`   
    Remove temporary Python file tree for tasks that have finished running (set to `true`)  
 * `path.exports`   
-   Root directory for the generated export files (`${user.home}/oapen/oapenmemo/exports/`). OAPEN Client web gets its files from here.
+   Root directory for the generated export files (`${user.home}/oapenmemo/exports/`). OAPEN Client web gets its files from here.
    See below for a detailed explanation. 
 * `taskrunner.cronschedule`   
    MEMO Task Runner runs continuously as a service, but we periodically need to select and run the defined tasks. To set a scheme
