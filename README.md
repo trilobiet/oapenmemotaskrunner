@@ -140,11 +140,9 @@ Task frequencies are defined as `DAY`, `WEEK`, `MONTH` or `YEAR`.
 When a Task's frequency is defined as `MONTH` or `YEAR` then that Task will only run when the day of month defined in the Task's
 `startDate` value exists in the current month.
 
-> A Task with `startDate = 2024-02-29` and frequency `YEAR` will run in February 2025 and then only after every 4 years, so in February 2028, 2032 etc. 
-       
-> A Task with `startDate = 2024-01-31` and frequency `MONTH` will run in January, March, May, July 2025 etc. but not in April, June 2025 etc.
+> A Task with `startDate = 2024-02-29` and frequency `YEAR` will start in February 2024 and then run only every 4 years, so in February 2028, 2032 etc.
 
-
+> A Task with `startDate = 2024-01-31` and frequency `MONTH` will run in January, March, May, July, August, October and December, but not in February, April, June, September and November.
     
 ## Annex: A Docker image to run Python scripts
 
