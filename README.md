@@ -109,11 +109,11 @@ Tasks can be run or dry-run directly through a web browser or a tool like `curl`
 
 * Run a task (`runtask`):
 
-	http://localhost:8085/api/runtask/4f443c3a-6118-11ee-8c99-0242ac120002
+	http://localhost:8085/runtask/4f443c3a-6118-11ee-8c99-0242ac120002
 
 * Dry run a task (`dryruntask`):
 
-	http://localhost:8085/api/dryruntask/4f443c3a-6118-11ee-8c99-0242ac120002
+	http://localhost:8085/dryruntask/4f443c3a-6118-11ee-8c99-0242ac120002
 	
 The last part of the paths being the Task's `id`.	
 	
