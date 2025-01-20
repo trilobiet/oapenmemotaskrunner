@@ -23,8 +23,12 @@ public class DependenciesCollectorImp implements DependenciesCollector {
 		List<Query> queries = new ArrayList<>();
 		Set<String> queryNames = DependenciesExtractor.getQueryNames(script.getBody());
 		
+		// System.out.println("Library queries: " + queryNames);
+		
 		// included queries
 		for (String qName : queryNames) {
+			
+			// System.out.println(qName);
 
 			Optional<Query> incQuery = dbService.findQueryByName(qName);
 			if (incQuery.isPresent()) queries.add(incQuery.get());
