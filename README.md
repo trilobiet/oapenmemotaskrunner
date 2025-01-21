@@ -303,11 +303,5 @@ Queries are saved as SQL, but are converted to a Python string named `query`. So
 After running the task the temporary directory is removed, unless setting `path.temp.pythonscripts.purge` is `FALSE`.  
 
 
-## Todo
-
-- Parameterized library queries.      
-  Setting a variable `searchterm = "comic"` which can then be evaluated in a query expression like `WHERE name = ${searchterm}`. 
-  
-
 
         

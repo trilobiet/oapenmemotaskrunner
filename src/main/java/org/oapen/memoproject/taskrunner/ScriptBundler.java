@@ -10,7 +10,6 @@ import org.oapen.memoproject.taskrunner.entities.Script;
 public class ScriptBundler {
 	
 	private final Script script;
-	private final List<String> expressions = new LinkedList<>();
 	private final List<Script> includes = new LinkedList<>();
 	private final List<Query> queries = new LinkedList<>();
 	
@@ -40,16 +39,9 @@ public class ScriptBundler {
 		return this;
 	}
 	
-	public ScriptBundler addExpression(String expression) {
-		
-		expressions.add(expression);
-		return this;
-	}
-
 	public ScriptBundler addQuery(Query query) {
 		
 		queries.add(query);
-		evaluateExpressions();
 		return this;
 	}
 
@@ -64,10 +56,6 @@ public class ScriptBundler {
 		return this.script;
 	}
 
-	public List<String> getExpressions() {
-		return new LinkedList<>(expressions);
-	}
-
 	public List<Script> getIncludedScripts() {
 		return new LinkedList<>(includes);
 	}
@@ -76,13 +64,4 @@ public class ScriptBundler {
 		return new LinkedList<>(queries);
 	}
 	
-	// TODO
-	private void evaluateExpressions() {
-		
-		if (evaluatedScript != null) {
-			evaluatedScript = evaluatedScript.replace("TODO","TODO");
-		}	
-	}
-	
-
 }
