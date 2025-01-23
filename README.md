@@ -136,7 +136,7 @@ Exactly these calls are made by MEMO Manager when associated buttons are pressed
 
 In case MEMO Taskrunner is installed on a server external to MEMO Manager, its port must either be exposed to the outside world or a proxy server is needed to forward requests to the (internal) Spring Boot application port.
 
-As an example an NGINX configuration file, mapping `server_name memotaskrunner.oapen.org` to port 8085 at `localhost`:
+As an example an NGINX configuration file that maps `server_name memotaskrunner.oapen.org` to port 8085 at `localhost`:
 
     server {
 
