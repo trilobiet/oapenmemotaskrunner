@@ -112,9 +112,9 @@ Make sure large exports do not freeze the taskrunner. Sometimes large reports ca
 When starting the service Taskrunner writes the amount of available memory to the application log. When problems arise (system hangs), increase the memory as necessary.    
 
     2025-01-23 11:23:57.894  ...taskrunner.DockerPythonRunner      : ===============================
-    2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap total memory: 600.0 MB
+    2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap total memory: 1.0 GB
     2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap max memory: 2.0 GB
-    2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : Heap free memory: 554.9 MB
+    2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : Heap free memory: 901.1 MB
     2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : ===============================
 
 
