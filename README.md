@@ -103,6 +103,21 @@ This package runs as a service. It must be listening continuously for run-reques
 - Furthermore, Docker must be installed (version >= 24.0.7) along with the Python image (see instructions below).  
 
 
+### Java memory settings
+
+Make sure large exports do not freeze the taskrunner. Sometimes large reports can use up to several hundreds of MB's. Depending on the amount of available system memory start the service with suitable settings for `Xms` and `Xmx`. In [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt) add the memory settings to the `java` command in `ExecStart`: 
+
+    ExecStart=java -Xms1G -Xmx2G -jar /home/oapen/oapenmemo/taskrunner.jar
+    
+When starting the service Taskrunner writes the amount of available memory to the application log. When problems arise (system hangs), increase the memory as necessary.    
+
+    2025-01-23 11:23:57.894  ...taskrunner.DockerPythonRunner      : ===============================
+    2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap total memory: 600.0 MB
+    2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap max memory: 2.0 GB
+    2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : Heap free memory: 554.9 MB
+    2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : ===============================
+
+
 ## Running tasks manually
 
 Tasks can be run or dry-run directly through a web browser or a tool like `curl` 
@@ -117,7 +132,30 @@ Tasks can be run or dry-run directly through a web browser or a tool like `curl`
 	
 The last part of the paths being the Task's `id`.	
 	
-Exactly these calls are made by MEMO Manager when associated buttons are pressed in the GUI. When MEMO Taskrunner and MEMO Manager are installed on the same server we can do with `localhost:[port]`. Otherwise a webserver mapping is needed to call the task runner and precautions must be taken to prevent unauthorized run requests.
+Exactly these calls are made by MEMO Manager when associated buttons are pressed in the GUI. When MEMO Taskrunner and MEMO Manager are installed on the same server we can do with `localhost:[port]`. MEMO Applications are Spring Boot applications that run their own internal web server.
+
+In case MEMO Taskrunner is installed on a server external to MEMO Manager, its port must either be exposed to the outside world or a proxy server is needed to forward requests to the (internal) Spring Boot application port.
+
+As an example an NGINX configuration file, mapping `server_name memotaskrunner.oapen.org` to port 8085 at `localhost`:
+
+    server {
+
+        server_name memotaskrunner.oapen.org;
+
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+    
+        location / {
+            proxy_set_header Host $host;
+            proxy_set_header x-forwarded-for $remote_addr;
+            proxy_pass http://localhost:8085;
+        }
+    }
+    
+Here requests are forwarded to the Spring Boot application running at `http://localhost:8085`. Tune the `timeout` settings to sufficiently large settings for the NGINX web server not to return a Request Timeout response before the Taskrunner was able to finish a long running task (example uses 300 seconds).
+
+Of course in the case of an outside route to the Taskrunner, to prevent unauthorized run requests, precautions must be taken (like putting the server_name only in a local DNS hosts file).
 
 
 ### Response format

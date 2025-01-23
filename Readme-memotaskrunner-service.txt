@@ -13,7 +13,7 @@ Group=oapen
 
 Type=simple
 
-ExecStart=java -Xmx1G -jar /home/oapen/oapenmemo/taskrunner.jar
+ExecStart=java -Xms1G -Xmx2G -jar /home/oapen/oapenmemo/taskrunner.jar
 ExecStop=/bin/kill -15 $MAINPID
 
 Restart=always
