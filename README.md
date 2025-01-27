@@ -105,7 +105,7 @@ This package runs as a service. It must be listening continuously for run-reques
 
 ### Java memory settings
 
-Make sure large exports do not freeze the taskrunner. Sometimes large reports can use up to several hundreds of MB's. Depending on the amount of available system memory start the service with suitable settings for `Xms` and `Xmx`. In [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt) add the memory settings to the `java` command in `ExecStart`: 
+Make sure large exports do not freeze the task runner. Sometimes large reports can use up to several hundreds of MB's. Depending on the amount of available system memory start the service with suitable settings for `Xms` and `Xmx`. In [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt) add the memory settings to the `java` command in `ExecStart`: 
 
     ExecStart=java -Xms1G -Xmx2G -jar /home/oapen/oapenmemo/taskrunner.jar
     
@@ -116,6 +116,9 @@ When starting the service Taskrunner writes the amount of available memory to th
     2025-01-23 11:23:57.897  ...taskrunner.DockerPythonRunner      : Heap max memory: 2.0 GB
     2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : Heap free memory: 901.1 MB
     2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : ===============================
+
+Obviously these settings can never exceed the machine available RAM.
+
 
 
 ## Running tasks manually
