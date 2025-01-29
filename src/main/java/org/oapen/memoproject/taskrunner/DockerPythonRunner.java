@@ -2,6 +2,7 @@ package org.oapen.memoproject.taskrunner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,6 +78,10 @@ public final class DockerPythonRunner implements ScriptRunner {
 
 			// https://www.baeldung.com/java-working-with-python
 			CommandLine cmdLine = CommandLine.parse(cmd);
+			
+			// Prevent OOM erors by writing to temp disk file
+			//FileOutputStream outputStream = new FileOutputStream("/home/acdhirr/burp.txt");
+			//PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
