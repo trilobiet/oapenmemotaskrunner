@@ -14,7 +14,7 @@ Python scripts and SQL queries are created and edited by MEMO Manager users and 
 
 ### Script restrictions (Code Guard)
 
-Python scripts are inspected by a Code Guard in the Task runner before being executed. Though they can not do much harm as they are run inside a Docker container, certain commands are forbidden.
+Python scripts are inspected by a Code Guard in the Task runner before being executed. Though they can not do much harm as they are run inside a Docker container, certain commands are still forbidden.
 
 Forbidden instructions are:
 * `exec`
@@ -32,7 +32,7 @@ When Task Runner encounters illegal instructions the script will not run and an 
 
 ### SQL restrictions
 
-The Task runner poses no restrictions on what SQL queries can do, and thus, for safety, restrictions must be defined in the database. In order to avoid unwanted deletes or updates, database access should be allowed only to a user with `read` but not `write` permissions.
+The Task runner poses no restrictions on what SQL queries can do, and thus, for safety, restrictions must be defined in the database. In order to avoid unwanted deletes or updates, database access should be allowed only to a user with `read` but not `write` permissions (`oapen_library_pyscript`).
 
 
 ### Installing of extra Python packages
@@ -70,7 +70,8 @@ When extra Python library packages are needed, a new Docker image must be create
 * `taskRunner.busy.starttime`   
 * `taskRunner.busy.hours`   
    These two values denote a period during which no client calls (run or dry run requests through HTTP) will be processed.
-   This period should start at the same time as `cronschedule` and must last long enough to allow the task runner to complete all its selected tasks.    
+   This period should start at the same time as `cronschedule` and must last long enough to allow the task runner to complete all its
+   selected tasks.    
    (suggested values `starttime=02:00` and `hours=4`)
 
 ### Export directory structure
@@ -96,16 +97,32 @@ These directories contain at most just as many files as there are tasks, because
 
 This package runs as a service. It must be listening continuously for run-requests from the Task Manager. Therefore running as a cron job is not advised.
 
-- Copy `taskrunner-x.y.z.jar` to the user's (`oapen`) home directory;
+- Create an installation directory under the user's (`oapen`) home directory;
+- Copy `taskrunner-x.y.z.jar` to the installation directory;
+- Copy `src/main/resources/application.properties.tpl` to the installation directory and rename to `application.properties`;
+- Edit `application.properties` (see above 'Configuration');
 - Create a symlink `ln -s taskrunner-x.y.z.jar taskrunner.jar`;
 - In `/etc/systemd/system` create a file named `oapen-memo-taskrunner.service` with the content
   copied from [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt);
-- Furthermore, Docker must be installed (version >= 24.0.7) along with the Python image (see instructions below).  
+- Furthermore, Docker must be installed (version >= 24.0.7) along with the Python image (see instructions below). 
+
 
 
 ### Java memory settings
 
-Make sure large exports do not freeze the task runner. Sometimes large reports can use up to several hundreds of MB's. Depending on the amount of available system memory start the service with suitable settings for `Xms` and `Xmx`. In [Readme-memotaskrunner-service.txt](./Readme-memotaskrunner-service.txt) add the memory settings to the `java` command in `ExecStart`: 
+Make sure large exports do not freeze the task runner. Sometimes large reports can use up to several hundreds of MB's. Depending on the amount of available system memory start the service with suitable settings for `Xms` and `Xmx`. Include a file `taskrunner.conf` next to `taskrunner.jar` with the following content: 
+
+    JAVA_OPTS="-Xms1G -Xmx2G"
+
+Do **not** call the jar from Java in the service descriptor, because calling the jar from Java ignores any external `application.properties` (you would have to include its path as an argument). So call as:
+
+	ExecStart=/home/oapen/oapenmemo/taskrunner/taskrunner.jar
+	
+Or (not tested):
+
+	ExecStart=java -Xms1G -Xmx2G –DApp.config.file=/home/oapen/oapenmemo/taskrunner/application.properties -jar /home/oapen/oapenmemo/taskrunner/taskrunner.jar
+
+But NOT as:
 
     ExecStart=java -Xms1G -Xmx2G -jar /home/oapen/oapenmemo/taskrunner.jar
     
@@ -117,7 +134,7 @@ When starting the service Taskrunner writes the amount of available memory to th
     2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : Heap free memory: 901.1 MB
     2025-01-23 11:23:57.898  ...taskrunner.DockerPythonRunner      : ===============================
 
-Obviously these settings can never exceed the machine available RAM.
+Obviously these settings must never exceed the machine available RAM.
 
 
 
@@ -211,7 +228,10 @@ Holding the following content:
     RUN wget https://raw.githubusercontent.com/svpino/rfeed/master/rfeed.py
     RUN mv ./rfeed.py /usr/local/lib/python3.10/dist-packages
     
-Save as `dockerfile` (or whatever name seems apt) 
+See [python.txt](./python.txt) for more install suggestions.
+
+Save as `dockerfile` (or whatever name seems apt).
+ 
 
 ### 2. Create an image from the Docker file
 

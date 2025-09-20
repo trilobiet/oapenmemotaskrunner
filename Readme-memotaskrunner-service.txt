@@ -13,7 +13,9 @@ Group=oapen
 
 Type=simple
 
-ExecStart=java -Xms1G -Xmx2G -jar /home/oapen/oapenmemo/taskrunner.jar
+# Call the runnable jar directly so Spring will find any external application.properties
+# Optionally you can put a file manager.conf next to manager.jar with jvm args JAVA_OPTS="-Xms512m"
+ExecStart=/home/oapen/oapenmemo/taskrunner/taskrunner.jar
 ExecStop=/bin/kill -15 $MAINPID
 
 Restart=always

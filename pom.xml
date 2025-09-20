@@ -14,7 +14,7 @@
 	
 	<groupId>org.oapen.memoproject</groupId>
 	<artifactId>taskrunner</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<name>taskrunner</name>
 	<description>OAPEN Taskrunner Application for MEMO Project</description>
 
@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
+			<version>1.18.30</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 		<dependency>
@@ -147,6 +147,18 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.21.0</version>
 			</plugin-->
+			
+			<!-- To prevent sensitive data from ending up in the jar, exclude all application-*.properties files. 
+			We will use an external application.properties instead. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/application-*.properties*</exclude>
+					</excludes>
+				</configuration>
+			</plugin>			
 			
 		</plugins>
 		

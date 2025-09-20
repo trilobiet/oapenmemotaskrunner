@@ -52,7 +52,7 @@ public class DockerRunnerTest {
 		
 		System.out.println(result);
 		
-		assertTrue(result.isRight());
+		assertTrue(result.isRight(),"Is Docker installed and running? Does image 'oapen/ubuntu2204python310' exist?");
 		assertTrue(result.get().toString().contains("Script 1"));
 		assertTrue(result.get().toString().contains("Script 2"));
 		assertTrue(result.get().toString().contains("Select 'I am a resultset'"));
